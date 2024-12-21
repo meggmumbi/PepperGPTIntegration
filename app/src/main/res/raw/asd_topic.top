@@ -1,0 +1,41 @@
+topic: ~asd_topic()
+
+# Define a concept for ASD characteristics
+concept:(asd_characteristics) [
+    "Difficulty with Social Communication"
+    "Delayed Speech or Language Skills"
+    "Lack Of Social Interaction"
+    "Repetitive Behaviors"
+    "Sensory Sensitivities"
+    "Difficulty with Transitions"
+    "Limited Pretend Play"
+]
+
+# User rules for each characteristic
+u:(Difficulty with Social Communication)
+    %difficulty
+    Struggling to start or sustain a conversation can be a common experience.
+
+u:(Delayed Speech or Language Skills)
+    %delayed
+    Individuals might express themselves differently through nonverbal cues.
+
+u:(Lack Of Social Interaction)
+    %lack
+    Some may have a deep interest in specific subjects or routines.
+
+u:(Repetitive Behaviors)
+    %repetitive
+    Repetitive behaviors like motor movements, speech, or routines.
+
+u:(Sensory Sensitivities)
+    %sensory
+    Understanding social rules and customs might be difficult.
+
+u:(Difficulty with Transitions)
+    %transitions
+    Changes to routines might feel overwhelming.
+
+u:(Limited Pretend Play)
+    %limited
+    Pretend play may be limited or absent.
