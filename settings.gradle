@@ -4,6 +4,7 @@ pluginManagement {
         google()
         mavenCentral()
     }
+
 }
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
@@ -14,6 +15,7 @@ dependencyResolutionManagement {
             url 'https://qisdk.softbankrobotics.com/sdk/maven/'
         }
     }
+
 }
 rootProject.name = "PepperGPTIntegration"
 include ':app'

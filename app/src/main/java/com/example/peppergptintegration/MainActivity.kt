@@ -1,180 +1,227 @@
 package com.example.peppergptintegration
 
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.aldebaran.qi.Future
+import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.setupActionBarWithNavController
 import com.aldebaran.qi.sdk.QiContext
 import com.aldebaran.qi.sdk.QiSDK
 import com.aldebaran.qi.sdk.RobotLifecycleCallbacks
-import com.aldebaran.qi.sdk.`object`.conversation.Chat
-import com.aldebaran.qi.sdk.builder.*
-import com.aldebaran.qi.sdk.design.activity.RobotActivity
+import com.aldebaran.qi.sdk.builder.SayBuilder
+import com.example.peppergptintegration.databinding.ActivityMainBinding
+import kotlinx.coroutines.*
+import org.java_websocket.client.WebSocketClient
+import org.java_websocket.handshake.ServerHandshake
+import org.json.JSONObject
+import java.net.URI
 
-class MainActivity : RobotActivity(), RobotLifecycleCallbacks {
-
-    private lateinit var asdList: List<ASDType>
-    private var qiContext: QiContext? = null
-    private var chat: Chat? = null
-    private var chatFuture: Future<Void>? = null
+class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var navController: NavController
+    private lateinit var webSocketManager: WebSocketManager
+    private lateinit var qiContext: QiContext
+    private val activityScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
+        // Initialize Navigation Component
+        setupNavigation()
+
+        // Initialize WebSocket
+        webSocketManager = WebSocketManager { message ->
+            runOnUiThread {
+                handleWebSocketMessage(message)
+            }
+        }
+
+        // Register Pepper QiSDK
         QiSDK.register(this, this)
-        setContentView(R.layout.activity_main)
+    }
 
-        // Initialize ASD characteristics list
-        asdList = listOf(
-            ASDType(
-                title = "Difficulty with Social Communication",
-                description = "Struggling to start or sustain a conversation can be a common experience.",
-                imageResId = R.drawable.ic_sensory
-            ),
-            ASDType(
-                title = "Delayed Speech or Language Skills",
-                description = "Individuals might express themselves differently through nonverbal cues.",
-                imageResId = R.drawable.ic_communication
-            ),
-            ASDType(
-                title = "Lack Of Social Interaction",
-                description = "Some may have a deep interest in specific subjects or routines.",
-                imageResId = R.drawable.ic_sensory
-            ),
-            ASDType(
-                title = "Repetitive Behaviors",
-                description = "Repetitive behaviors like motor movements, speech, or routines",
-                imageResId = R.drawable.ic_sensory
-            ),
-            ASDType(
-                title = "Sensory Sensitivities",
-                description = "Understanding social rules and customs might be difficult.",
-                imageResId = R.drawable.ic_sensory
-            ),
-            ASDType(
-                title = "Difficulty with Transitions",
-                description = "Understanding social rules and customs might be difficult.",
-                imageResId = R.drawable.ic_sensory
-            ),
-            ASDType(
-                title = "Limited Pretend Play",
-                description = "Pretend play may be limited or absent.",
-                imageResId = R.drawable.ic_kidrwebpg
-            )
-        )
+    private fun setupNavigation() {
+        val navHostFragment = supportFragmentManager
+            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        navController = navHostFragment.navController
 
-        // Setup RecyclerView for tablet interaction
-        val recyclerView: RecyclerView = findViewById(R.id.recyclerView)
-        recyclerView.layoutManager = GridLayoutManager(this, 2) // 2 columns
-        recyclerView.adapter = ASDAdapter(asdList) { selectedAsdType ->
-            handleASDSelection(selectedAsdType)
+        // Setup ActionBar with NavController
+        setupActionBarWithNavController(navController)
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        return navController.navigateUp() || super.onSupportNavigateUp()
+    }
+
+    // Pepper Robot Lifecycle Callbacks
+    override fun onRobotFocusGained(qiContext: QiContext) {
+        this.qiContext = qiContext
+        webSocketManager.connect()
+        safeSay("Hello! I'm ready for speech therapy sessions.")
+    }
+
+    override fun onRobotFocusLost() {
+        Log.d("Pepper", "Robot focus lost")
+    }
+
+    override fun onRobotFocusRefused(reason: String) {
+        runOnUiThread {
+            Toast.makeText(this, "Robot unavailable: $reason", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    // WebSocket Management
+    inner class WebSocketManager(private val messageHandler: (String) -> Unit) {
+        private var webSocketClient: WebSocketClient? = null
+        private var connectionAttempts = 0
+        private val maxConnectionAttempts = 5
+
+        fun connect() {
+            if (connectionAttempts >= maxConnectionAttempts) {
+                messageHandler("ERROR: Max connection attempts reached")
+                return
+            }
+
+            try {
+                val uri = URI("ws://10.0.2.2:8000/ws")
+                webSocketClient = object : WebSocketClient(uri) {
+                    override fun onOpen(handshakedata: ServerHandshake?) {
+                        connectionAttempts = 0
+                        messageHandler("CONNECTED")
+                        Log.d("WebSocket", "Connection opened")
+                    }
+
+                    override fun onMessage(message: String?) {
+                        message?.let {
+                            Log.d("WebSocket", "Message received: $it")
+                            messageHandler(it)
+                        }
+                    }
+
+                    override fun onClose(code: Int, reason: String?, remote: Boolean) {
+                        Log.d("WebSocket", "Connection closed: $reason")
+                        messageHandler("DISCONNECTED: $reason")
+                        attemptReconnect()
+                    }
+
+                    override fun onError(ex: Exception?) {
+                        Log.e("WebSocket", "Error: ${ex?.message}")
+                        messageHandler("ERROR: ${ex?.message}")
+                        attemptReconnect()
+                    }
+                }
+                connectionAttempts++
+                webSocketClient?.connect()
+            } catch (e: Exception) {
+                Log.e("WebSocket", "Connection error", e)
+                messageHandler("ERROR: ${e.message}")
+            }
+        }
+
+        private fun attemptReconnect() {
+            activityScope.launch {
+                kotlinx.coroutines.delay(3000)
+                connect()
+            }
+        }
+
+        fun sendMessage(message: String) {
+            try {
+                if (webSocketClient?.isOpen == true) {
+                    webSocketClient?.send(message)
+                } else {
+                    Log.e("WebSocket", "Cannot send message - connection not open")
+                }
+            } catch (e: Exception) {
+                Log.e("WebSocket", "Send message error", e)
+            }
+        }
+
+        fun disconnect() {
+            try {
+                webSocketClient?.close()
+            } catch (e: Exception) {
+                Log.e("WebSocket", "Disconnection error", e)
+            }
+        }
+
+        fun isConnected(): Boolean {
+            return webSocketClient?.isOpen == true
+        }
+    }
+
+    private fun handleWebSocketMessage(message: String) {
+        when {
+            message == "CONNECTED" -> {
+                safeSay("Connected to therapy server")
+            }
+            message.startsWith("DISCONNECTED") -> {
+                val reason = message.substringAfter("DISCONNECTED: ")
+                safeSay("Lost connection to server: ${reason.take(20)}")
+            }
+            message.startsWith("ERROR") -> {
+                val error = message.substringAfter("ERROR: ")
+                safeSay("Network error occurred: ${error.take(20)}")
+            }
+            message.startsWith("{") -> handleJsonMessage(message)
+            else -> Log.d("WebSocket", "Unknown message: $message")
+        }
+    }
+
+    private fun handleJsonMessage(jsonString: String) {
+        try {
+            val json = JSONObject(jsonString)
+            when (json.getString("type")) {
+                "session_initialized" -> {
+                    val sessionId = json.getString("session_id")
+                    safeSay("New therapy session ready. Session ID ${sessionId.take(8)}")
+                }
+                "therapy_update" -> {
+                    val childName = json.optString("child_name", "")
+                    val progress = json.optString("progress", "")
+                    safeSay("Update for $childName: $progress")
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("JSON", "Parse error", e)
+        }
+    }
+
+    fun safeSay(text: String, maxRetries: Int = 3) {
+        if (!::qiContext.isInitialized) return
+
+        activityScope.launch {
+            var retryCount = 0
+            while (retryCount < maxRetries) {
+                try {
+                    withContext(Dispatchers.IO) {
+                        SayBuilder.with(qiContext)
+                            .withText(text)
+                            .build()
+                            .run()
+                    }
+                    break
+                } catch (e: Exception) {
+                    retryCount++
+                    if (retryCount >= maxRetries) {
+                        Log.e("Pepper", "Final speech attempt failed", e)
+                    } else {
+                        delay(1000)
+                    }
+                }
+            }
         }
     }
 
     override fun onDestroy() {
-        QiSDK.unregister(this, this) // Unregister lifecycle callbacks
+        activityScope.coroutineContext.cancel()
+        webSocketManager.disconnect()
+        QiSDK.unregister(this, this)
         super.onDestroy()
-    }
-
-    override fun onRobotFocusGained(qiContext: QiContext) {
-        Log.d("PepperDebug", "Robot focus gained.")
-        this.qiContext = qiContext
-
-        // Pepper greets the user
-        val sayHello = SayBuilder.with(qiContext)
-            .withText("Hello! Select an ASD characteristic or ask me about them.")
-            .build()
-        sayHello.async().run()
-
-        // Load topic
-        val topic = TopicBuilder.with(qiContext)
-            .withResource(R.raw.asd_topic) // Ensure the .top file exists in res/raw
-            .build()
-
-        // Create QiChatbot
-        val qiChatbot = QiChatbotBuilder.with(qiContext)
-            .withTopic(topic)
-            .build()
-
-        // Create Chat
-        chat = ChatBuilder.with(qiContext)
-            .withChatbot(qiChatbot)
-            .build()
-
-        // React to bookmarks
-        val bookmarks = topic.bookmarks
-        bookmarks.forEach { name, bookmark ->
-            val status = qiChatbot.bookmarkStatus(bookmark)
-            status.addOnReachedListener {
-                Log.d("PepperDebug", "Bookmark reached: $name")
-                val selectedAsdType = asdList.firstOrNull { it.title.contains(name, true) }
-                if (selectedAsdType != null) {
-                    handleASDSelection(selectedAsdType)
-                }
-            }
-        }
-
-        // Start chat
-        chatFuture = chat?.async()?.run()
-    }
-
-    override fun onRobotFocusLost() {
-        Log.d("PepperDebug", "Robot focus lost.")
-        qiContext = null
-        stopChat()
-    }
-
-    override fun onRobotFocusRefused(reason: String?) {
-        Log.e("PepperDebug", "Robot focus refused: $reason")
-    }
-
-    private fun stopChat() {
-        chatFuture?.requestCancellation()
-        chatFuture = null
-    }
-
-    private fun handleASDSelection(selectedAsdType: ASDType) {
-        val context = qiContext
-        if (context == null) {
-            Log.e("PepperDebug", "QiContext is null! Cannot execute Say or Animate actions.")
-            return
-        }
-
-        // Display the selection on the tablet
-        runOnUiThread {
-            Toast.makeText(this, "Selected: ${selectedAsdType.title}", Toast.LENGTH_LONG).show()
-        }
-
-        // Create the Say action
-        val sayFuture = SayBuilder.with(context)
-            .withText("You selected: ${selectedAsdType.title}. ${selectedAsdType.description}")
-            .buildAsync()
-
-        // Run the Say action and chain with Animate
-        sayFuture.andThenCompose { say ->
-            say.async().run() // Execute the Say action
-        }.andThenCompose {
-            // Create the animation
-            AnimationBuilder.with(context)
-                .withResources(R.raw.waving_right_b001) // Replace with a valid animation file
-                .buildAsync()
-        }.andThenCompose { animation ->
-            // Build the Animate action
-            AnimateBuilder.with(context)
-                .withAnimation(animation)
-                .buildAsync()
-        }.andThenCompose { animate ->
-            animate.async().run() // Execute the Animate action
-        }.thenConsume {
-            // Handle the final result
-            if (it.hasError()) {
-                Log.e("PepperDebug", "Error during actions: ${it.errorMessage}")
-            } else {
-                Log.d("PepperDebug", "Actions completed successfully.")
-            }
-        }
     }
 }
