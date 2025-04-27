@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">PepperGPTIntegration</string>
+    <string name="category_icon">Category icon</string>
 </resources>

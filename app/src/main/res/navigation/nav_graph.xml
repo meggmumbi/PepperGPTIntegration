@@ -61,30 +61,61 @@
         android:label="Children"
         tools:layout="@layout/fragment_child_list">
 
-<!--        <action-->
-<!--            android:id="@+id/action_childListFragment_to_addChildFragment"-->
-<!--            app:destination="@id/addChildFragment" />-->
-
-<!--        <action-->
-<!--            android:id="@+id/action_childListFragment_to_childDetailsFragment"-->
-<!--            app:destination="@id/childDetailsFragment">-->
-<!--            <argument-->
-<!--                android:name="childId"-->
-<!--                app:argType="string" />-->
-<!--        </action>-->
-
-<!--        <action-->
-<!--            android:id="@+id/action_childListFragment_to_therapySessionFragment"-->
-<!--            app:destination="@id/therapySessionFragment">-->
-<!--            <argument-->
-<!--                android:name="childId"-->
-<!--                app:argType="string" />-->
-<!--        </action>-->
-
+        <action
+            android:id="@+id/action_childListFragment_to_addChildFragment"
+            app:destination="@id/addChildFragment" />
+        <action
+            android:id="@+id/action_childListFragment_to_categoriesFragment"
+            app:destination="@id/categoriesFragment" >
+            <argument
+                android:name="childId"
+                app:argType="string" />
+        </action>
+        <action
+            android:id="@+id/action_childListFragment_to_editChildFragment"
+            app:destination="@id/editChildFragment">
+            <argument
+                android:name="childId"
+                app:argType="string" />
+        </action>
         <action
             android:id="@+id/action_childListFragment_to_loginFragment"
             app:destination="@id/loginFragment"
             app:popUpTo="@id/loginFragment"
             app:popUpToInclusive="true" />
     </fragment>
+    <!-- Add Child Fragment -->
+    <fragment
+        android:id="@+id/addChildFragment"
+        android:name="com.example.peppergptintegration.AddChildFragment"
+        android:label="Add Child">
+        <action
+            android:id="@+id/action_addChild_to_childList"
+            app:destination="@id/childListFragment"
+            app:popUpTo="@id/childListFragment"/>
+    </fragment>
+    <!-- Edit Child Fragment -->
+    <fragment
+        android:id="@+id/editChildFragment"
+        android:name="com.example.peppergptintegration.EditChildFragment"
+        android:label="Edit Child"
+        tools:layout="@layout/fragment_edit_child">
+
+        <argument
+            android:name="childId"
+            app:argType="string" />
+    </fragment>
+
+    <!--Categories Fragment -->
+    <fragment
+        android:id="@+id/categoriesFragment"
+        android:name="com.example.peppergptintegration.CategoriesFragment"
+        android:label="Categories"
+        tools:layout="@layout/fragment_categories">
+        <argument
+            android:name="childId"
+            app:argType="string" />
+
+    </fragment>
+
 </navigation>

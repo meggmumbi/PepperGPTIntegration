@@ -12,6 +12,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.peppergptintegration.databinding.FragmentChildListBinding
 import com.example.peppergptintegration.Child
+import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.Dispatchers
 
 import kotlinx.coroutines.launch
@@ -41,13 +42,16 @@ class ChildListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupRecyclerView()
+        setupClickListeners()
         fetchChildren()
 
         binding.addChildFab.setOnClickListener {
-//            findNavController().navigate(
-//                ChildListFragmentDirections.actionChildListFragmentToAddChildFragment()
-//            )
+            findNavController().navigate(
+                ChildListFragmentDirections.actionChildListFragmentToAddChildFragment()
+            )
         }
+
+
 
         // Make Pepper announce the screen
         (activity as? MainActivity)?.safeSay("Here is the list of children. Please select a child to begin therapy.")
@@ -57,7 +61,9 @@ class ChildListFragment : Fragment() {
         childAdapter = ChildAdapter(
             children = emptyList(),
             onItemClick = { child ->
-                navigateToChildDetails(child.id)
+                findNavController().navigate(
+                    ChildListFragmentDirections.actionChildListFragmentToEditChildFragment(child.id)
+                )
             },
             onTherapyClick = { child ->
                 startTherapySession(child)
@@ -72,7 +78,7 @@ class ChildListFragment : Fragment() {
     }
 
     private fun fetchChildren() {
-
+        showLoadingState()
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
@@ -80,18 +86,37 @@ class ChildListFragment : Fragment() {
                 withContext(Dispatchers.Main) {
 
                     if (children.isNotEmpty()) {
+                        showContentState()
                         childAdapter.updateChildren(children)
                     } else {
-
+                        showEmptyState()
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-//                    binding.progressBar.visibility = View.GONE
-//                    showError("Failed to load children: ${e.message}")
+                    showErrorState("Failed to load children: ${e.message}")
+                    showError("Failed to load children: ${e.message}")
                     Log.e("ChildList", "Error fetching children", e)
                 }
             }
+        }
+    }
+
+    private fun setupClickListeners() {
+        binding.addChildFab.setOnClickListener {
+            findNavController().navigate(
+                ChildListFragmentDirections.actionChildListFragmentToAddChildFragment()
+            )
+        }
+
+        binding.emptyStateView.findViewById<MaterialButton>(R.id.addChildButton).setOnClickListener {
+            findNavController().navigate(
+                ChildListFragmentDirections.actionChildListFragmentToAddChildFragment()
+            )
+        }
+
+        binding.errorStateView.findViewById<MaterialButton>(R.id.retryButton).setOnClickListener {
+            fetchChildren()
         }
     }
 
@@ -162,22 +187,46 @@ class ChildListFragment : Fragment() {
     }
 
     private fun startTherapySession(child: Child) {
-//        findNavController().navigate(
-//            ChildListFragmentDirections.actionChildListFragmentToTherapySessionFragment(child.id)
-//        )
+        findNavController().navigate(
+            ChildListFragmentDirections.actionChildListFragmentToCategoriesFragment(child.id)
+        )
         (activity as? MainActivity)?.safeSay("Starting therapy session with ${child.name}")
     }
 
-//    private fun showEmptyState() {
-//        binding.emptyStateView.visibility = View.VISIBLE
-//        binding.childRecyclerView.visibility = View.GONE
-//    }
-//
-//    private fun showError(message: String) {
-//        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
-//        binding.errorTextView.text = message
-//        binding.errorTextView.visibility = View.VISIBLE
-//    }
+    private fun showLoadingState() {
+        binding.loadingStateView.visibility = View.VISIBLE
+        binding.emptyStateView.visibility = View.GONE
+        binding.errorStateView.visibility = View.GONE
+        binding.childRecyclerView.visibility = View.GONE
+    }
+
+    private fun showContentState() {
+        binding.loadingStateView.visibility = View.GONE
+        binding.emptyStateView.visibility = View.GONE
+        binding.errorStateView.visibility = View.GONE
+        binding.childRecyclerView.visibility = View.VISIBLE
+    }
+
+    private fun showEmptyState() {
+        binding.loadingStateView.visibility = View.GONE
+        binding.emptyStateView.visibility = View.VISIBLE
+        binding.errorStateView.visibility = View.GONE
+        binding.childRecyclerView.visibility = View.GONE
+    }
+
+    private fun showErrorState(message: String) {
+        binding.loadingStateView.visibility = View.GONE
+        binding.emptyStateView.visibility = View.GONE
+        binding.errorStateView.visibility = View.VISIBLE
+        binding.childRecyclerView.visibility = View.GONE
+        binding.errorTextView.text = message
+    }
+
+    private fun showError(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+        binding.errorTextView.text = message
+        binding.errorTextView.visibility = View.VISIBLE
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()

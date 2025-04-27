@@ -10,9 +10,15 @@
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/drawable/ic_person_add.xml" value="0.196" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/activity_main.xml" value="0.18802083333333333" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/card_asd_item.xml" value="0.17395833333333333" />
+        <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/fragment_add_category.xml" value="0.2758152173913043" />
+        <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/fragment_add_child.xml" value="0.2758152173913043" />
+        <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/fragment_categories.xml" value="0.2758152173913043" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/fragment_child_list.xml" value="0.2758152173913043" />
+        <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/fragment_create_category.xml" value="0.2758152173913043" />
+        <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/fragment_edit_child.xml" value="0.2758152173913043" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/fragment_login.xml" value="0.2758152173913043" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/fragment_register.xml" value="0.18802083333333333" />
+        <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/item_category.xml" value="0.2758152173913043" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/item_child.xml" value="0.2758152173913043" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/menu/child_list_menu.xml" value="0.36666666666666664" />
       </map>

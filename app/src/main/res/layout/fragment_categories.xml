@@ -16,10 +16,8 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Children List"
-            app:titleTextColor="@color/white"
-
-            app:menu="@menu/child_list_menu"/>
+            app:title="Therapy Categories"
+            app:titleTextColor="@color/white"/>
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -48,7 +46,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Loading children..."
+                android:text="Loading categories..."
                 android:textColor="@color/white"
                 android:textSize="18sp"/>
         </LinearLayout>
@@ -71,7 +69,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="No children found"
+                android:text="No categories found"
                 android:textColor="@color/white"
                 android:textSize="18sp"/>
 
@@ -79,17 +77,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Add a child to get started"
+                android:text="Categories will appear here when available"
                 android:textColor="@color/white"
                 android:textSize="14sp"/>
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/addChildButton"
+                android:id="@+id/retryButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:text="Add Child"
-                app:icon="@drawable/ic_add_child"
+                android:text="Try Again"
+                app:icon="@drawable/ic_refresh"
                 app:iconTint="@color/white"
                 app:backgroundTint="@color/colorPrimary"/>
         </LinearLayout>
@@ -117,7 +115,7 @@
                 android:textSize="18sp"/>
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/retryButton"
+                android:id="@+id/errorRetryButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
@@ -127,26 +125,31 @@
                 app:backgroundTint="@color/colorPrimary"/>
         </LinearLayout>
 
-
-
         <!-- Content State -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/childRecyclerView"
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/swipeRefreshLayout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:paddingBottom="80dp"
-            tools:listitem="@layout/item_child"/>
-    </FrameLayout>
+            android:layout_height="match_parent">
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/addChildFab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="24dp"
-        android:src="@drawable/ic_add_child"
-        app:backgroundTint="@color/colorPrimary"
-        app:tint="@color/white"/>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/categoriesRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingBottom="16dp"
+                tools:listitem="@layout/item_category"/>
+
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <!-- Pagination Loading -->
+        <ProgressBar
+            android:id="@+id/paginationProgressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:layout_gravity="bottom"
+            android:indeterminate="true"
+            android:visibility="gone"/>
+    </FrameLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
