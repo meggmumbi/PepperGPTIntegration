@@ -115,7 +115,23 @@
         <argument
             android:name="childId"
             app:argType="string" />
+        <action
+            android:id="@+id/action_categoriesFragment_to_createCategoryFragment"
+            app:destination="@id/createCategoryFragment">
+            <argument
+                android:name="childId"
+                app:argType="string" />
+        </action>
 
     </fragment>
 
+    <!--Create Categories Fragment -->
+    <fragment
+        android:id="@+id/createCategoryFragment"
+        android:name="com.example.peppergptintegration.CreateCategoryFragment"
+        android:label="Create Category"
+        tools:layout="@layout/fragment_create_category" />
+        <argument
+            android:name="childId"
+            app:argType="string" />
 </navigation>

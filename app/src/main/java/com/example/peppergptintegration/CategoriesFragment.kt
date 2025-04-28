@@ -32,6 +32,7 @@ class CategoriesFragment : Fragment() {
     private var currentPage = 1
     private var isLoading = false
     private var isLastPage = false
+    private lateinit var childId: String
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,6 +46,12 @@ class CategoriesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        childId = arguments?.getString("childId") ?: run {
+            showSnackbar("Child ID not provided")
+            findNavController().navigateUp()
+            return
+        }
+
         setupRecyclerView()
         setupClickListeners()
         fetchCategories()
@@ -52,7 +59,12 @@ class CategoriesFragment : Fragment() {
         binding.swipeRefreshLayout.setOnRefreshListener {
             refreshCategories()
         }
-
+        // When navigating to CreateCategoryFragment
+        binding.addCategoryFab.setOnClickListener {
+            findNavController().navigate(
+                CategoriesFragmentDirections.actionCategoriesFragmentToCreateCategoryFragment(childId)
+            )
+        }
         // Make Pepper announce the screen
         (activity as? MainActivity)?.safeSay("Here are the therapy categories. Please select a category to view activities.")
     }
