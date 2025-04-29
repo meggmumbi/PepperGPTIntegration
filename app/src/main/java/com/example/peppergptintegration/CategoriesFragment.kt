@@ -73,8 +73,17 @@ class CategoriesFragment : Fragment() {
         categoriesAdapter = CategoriesAdapter(
             categories = emptyList(),
             onItemClick = { category ->
-                navigateToActivities(category)
-            }
+                findNavController().navigateUp()
+            },
+            onViewClick = { category ->
+                findNavController().navigate(
+                    CategoriesFragmentDirections.actionCategoriesFragmentToCategoryItemsFragment(
+                        childId = arguments?.getString("childId") ?: "",
+                        categoryId = category.id
+                    )
+                )
+            },
+
         )
 
         binding.categoriesRecyclerView.apply {

@@ -122,7 +122,16 @@
                 android:name="childId"
                 app:argType="string" />
         </action>
-
+        <action
+            android:id="@+id/action_categoriesFragment_to_categoryItemsFragment"
+            app:destination="@id/categoryItemsFragment">
+            <argument
+                android:name="childId"
+                app:argType="string" />
+            <argument
+                android:name="categoryId"
+                app:argType="string" />
+        </action>
     </fragment>
 
     <!--Create Categories Fragment -->
@@ -134,4 +143,54 @@
         <argument
             android:name="childId"
             app:argType="string" />
+
+    <!-- Category Items Fragment -->
+    <fragment
+        android:id="@+id/categoryItemsFragment"
+        android:name="com.example.peppergptintegration.CategoryItemsFragment"
+        android:label="Category Items"
+        tools:layout="@layout/fragment_category_items">
+        <argument
+            android:name="childId"
+            app:argType="string" />
+        <argument
+            android:name="categoryId"
+            app:argType="string" />
+
+        <action
+            android:id="@+id/action_categoryItemsFragment_to_createItemFragment"
+            app:destination="@id/createItemFragment">
+            <argument
+                android:name="childId"
+                app:argType="string" />
+            <argument
+                android:name="categoryId"
+                app:argType="string" />
+        </action>
+
+<!--        <action-->
+<!--            android:id="@+id/action_categoryItemsFragment_to_itemDetailsFragment"-->
+<!--            app:destination="@id/itemDetailsFragment">-->
+<!--            <argument-->
+<!--                android:name="childId"-->
+<!--                app:argType="string"-->
+<!--                android:defaultValue="@null" />-->
+<!--            <argument-->
+<!--                android:name="itemId"-->
+<!--                app:argType="string" />-->
+<!--        </action>-->
+    </fragment>
+    <!-- Create Item Fragment -->
+    <fragment
+        android:id="@+id/createItemFragment"
+        android:name="com.example.peppergptintegration.CreateItemFragment"
+        android:label="Create Item"
+        tools:layout="@layout/fragment_create_item">
+        <argument
+            android:name="childId"
+            app:argType="string" />
+        <argument
+            android:name="categoryId"
+            app:argType="string" />
+    </fragment>
 </navigation>

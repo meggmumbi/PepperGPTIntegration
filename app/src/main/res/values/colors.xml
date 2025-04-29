@@ -17,4 +17,7 @@
     <color name="gray">#9E9E9E</color>
     <color name="colorPrimaryLight">#BB86FC</color>
     <color name="gray_600">#757575</color>
+    <color name="cardBackground">#1E1E1E</color>
+    <color name="white_50_percent">#80FFFFFF</color> <!-- Semi-transparent white -->
+    <color name="image_placeholder">#2D2D2D</color>
 </resources>

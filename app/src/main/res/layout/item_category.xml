@@ -41,5 +41,14 @@
             android:textStyle="italic"/>
 
     </LinearLayout>
+    <ImageButton
+        android:id="@+id/viewItemButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_visibility"
+        app:tint="@color/white"
+        android:contentDescription="View item"/>
 
 </com.google.android.material.card.MaterialCardView>
