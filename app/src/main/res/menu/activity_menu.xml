@@ -1,0 +1,16 @@
+<!-- res/menu/activity_menu.xml -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_end_session"
+        android:icon="@drawable/ic_stop"
+        android:title="End Session"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_help"
+        android:icon="@drawable/ic_help"
+        android:title="Help"
+        app:showAsAction="never" />
+</menu>

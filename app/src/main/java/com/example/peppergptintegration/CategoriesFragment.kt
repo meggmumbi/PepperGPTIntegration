@@ -73,7 +73,13 @@ class CategoriesFragment : Fragment() {
         categoriesAdapter = CategoriesAdapter(
             categories = emptyList(),
             onItemClick = { category ->
-                findNavController().navigateUp()
+                findNavController().navigate(
+                    CategoriesFragmentDirections.actionCategoriesFragmentToActivitiesFragment(
+                        childId = arguments?.getString("childId") ?: "",
+                        categoryId = category.id,
+                        difficultyLevel = category.difficultyLevel.lowercase()
+                    )
+                )
             },
             onViewClick = { category ->
                 findNavController().navigate(

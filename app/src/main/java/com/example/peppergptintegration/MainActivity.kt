@@ -26,6 +26,7 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
     private lateinit var qiContext: QiContext
     private val activityScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)

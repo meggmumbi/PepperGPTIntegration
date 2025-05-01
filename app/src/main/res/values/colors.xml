@@ -20,4 +20,36 @@
     <color name="cardBackground">#1E1E1E</color>
     <color name="white_50_percent">#80FFFFFF</color> <!-- Semi-transparent white -->
     <color name="image_placeholder">#2D2D2D</color>
+    <color name="green_success">#4BB543</color>
+    <!-- Material 3 Color System -->
+    <color name="primary">#6750A4</color>
+    <color name="onPrimary">#FFFFFF</color>
+    <color name="primaryContainer">#EADDFF</color>
+    <color name="onPrimaryContainer">#21005D</color>
+    <color name="secondary">#625B71</color>
+    <color name="onSecondary">#FFFFFF</color>
+    <color name="secondaryContainer">#E8DEF8</color>
+    <color name="onSecondaryContainer">#1D192B</color>
+    <color name="tertiary">#7D5260</color>
+    <color name="onTertiary">#FFFFFF</color>
+    <color name="tertiaryContainer">#FFD8E4</color>
+    <color name="onTertiaryContainer">#31111D</color>
+
+    <color name="onError">#FFFFFF</color>
+    <color name="errorContainer">#F9DEDC</color>
+    <color name="onErrorContainer">#410E0B</color>
+    <color name="success">#4CAF50</color>
+    <color name="background">#FFFBFE</color>
+    <color name="onBackground">#1C1B1F</color>
+    <color name="surface">#FFFBFE</color>
+    <color name="onSurface">#1C1B1F</color>
+    <color name="surfaceVariant">#E7E0EC</color>
+    <color name="onSurfaceVariant">#49454F</color>
+    <color name="outline">#79747E</color>
+    <color name="surfaceContainerLow">#F7F2FA</color>
+    <color name="surfaceContainerHigh">#E6E0E9</color>
+    <color name="surfaceContainerHighest">#E6E0E9</color>
+
+    <color name="errorLight">#FFCDD2</color>  <!-- Light red -->
+    <color name="errorDark">#D32F2F</color>   <!-- Dark red -->
 </resources>

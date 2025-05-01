@@ -132,6 +132,19 @@
                 android:name="categoryId"
                 app:argType="string" />
         </action>
+        <action
+            android:id="@+id/action_categoriesFragment_to_activitiesFragment"
+            app:destination="@id/activitiesFragment">
+            <argument
+                android:name="childId"
+                app:argType="string" />
+            <argument
+                android:name="categoryId"
+                app:argType="string" />
+            <argument
+                android:name="difficultyLevel"
+                app:argType="string" />
+        </action>
     </fragment>
 
     <!--Create Categories Fragment -->
@@ -168,17 +181,7 @@
                 app:argType="string" />
         </action>
 
-<!--        <action-->
-<!--            android:id="@+id/action_categoryItemsFragment_to_itemDetailsFragment"-->
-<!--            app:destination="@id/itemDetailsFragment">-->
-<!--            <argument-->
-<!--                android:name="childId"-->
-<!--                app:argType="string"-->
-<!--                android:defaultValue="@null" />-->
-<!--            <argument-->
-<!--                android:name="itemId"-->
-<!--                app:argType="string" />-->
-<!--        </action>-->
+
     </fragment>
     <!-- Create Item Fragment -->
     <fragment
@@ -191,6 +194,22 @@
             app:argType="string" />
         <argument
             android:name="categoryId"
+            app:argType="string" />
+    </fragment>
+    <!-- Activities Fragment -->
+    <fragment
+        android:id="@+id/activitiesFragment"
+        android:name="com.example.peppergptintegration.ActivitiesFragment"
+        android:label="Therapy Session"
+        tools:layout="@layout/fragment_activities">
+        <argument
+            android:name="childId"
+            app:argType="string" />
+        <argument
+            android:name="categoryId"
+            app:argType="string" />
+        <argument
+            android:name="difficultyLevel"
             app:argType="string" />
     </fragment>
 </navigation>
