@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">PepperGPTIntegration</string>
     <string name="category_icon">Category icon</string>
+    <string name="empty_state_content_description">Empty state illustration</string>
+    <string name="no_session_history">No Session History</string>
+    <string name="no_session_history_subtitle">No sessions found for this child</string>
+    <string name="no_feedback_available">No Feedback for this session</string>
+    <string name="error_loading_session_history">Erro Loading Session History</string>
 </resources>

@@ -79,6 +79,13 @@
                 app:argType="string" />
         </action>
         <action
+            android:id="@+id/action_childListFragment_to_childProfileFragment"
+            app:destination="@id/childProfileFragment">
+            <argument
+                android:name="childId"
+                app:argType="string" />
+        </action>
+        <action
             android:id="@+id/action_childListFragment_to_loginFragment"
             app:destination="@id/loginFragment"
             app:popUpTo="@id/loginFragment"
@@ -210,6 +217,40 @@
             app:argType="string" />
         <argument
             android:name="difficultyLevel"
+            app:argType="string" />
+
+        <action
+            android:id="@+id/action_activitiesFragment_to_sessionOverviewFragment"
+            app:destination="@id/sessionOverviewFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/sessionOverviewFragment"
+        android:name="com.example.peppergptintegration.SessionOverviewFragment"
+        android:label="Session Overview"
+        tools:layout="@layout/fragment_session_overview">
+        <argument
+            android:name="overview"
+            app:argType="com.example.peppergptintegration.SessionOverview" />
+        <argument
+            android:name="childId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_sessionOverviewFragment_to_childProfileFragment"
+            app:destination="@id/childProfileFragment" />
+        <action
+            android:id="@+id/action_sessionOverviewFragment_to_childListFragment"
+            app:destination="@id/childListFragment" />
+    </fragment>
+
+    <!-- Add this fragment for child profile -->
+    <fragment
+        android:id="@+id/childProfileFragment"
+        android:name="com.example.peppergptintegration.ChildProfileFragment"
+        android:label="Child Profile"
+        tools:layout="@layout/fragment_child_profile">
+        <argument
+            android:name="childId"
             app:argType="string" />
     </fragment>
 </navigation>

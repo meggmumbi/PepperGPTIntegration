@@ -10,7 +10,8 @@ import com.example.peppergptintegration.Child
 class ChildAdapter(
     private var children: List<Child>,
     private val onItemClick: (Child) -> Unit,
-    private val onTherapyClick: (Child) -> Unit
+    private val onTherapyClick: (Child) -> Unit,
+    private val onViewProfileClick: (Child) -> Unit
 ) : RecyclerView.Adapter<ChildAdapter.ChildViewHolder>() {
 
     inner class ChildViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -19,6 +20,7 @@ class ChildAdapter(
         private val dateView: TextView = itemView.findViewById(R.id.diagnosisDate)
         private val notesView: TextView = itemView.findViewById(R.id.childNotes)
         private val therapyButton: TextView = itemView.findViewById(R.id.startTherapyButton)
+        private val viewDetailsButton: TextView = itemView.findViewById(R.id.viewChildDetailsButton)
 
         fun bind(child: Child) {
             nameView.text = child.name
@@ -28,6 +30,7 @@ class ChildAdapter(
 
             itemView.setOnClickListener { onItemClick(child) }
             therapyButton.setOnClickListener { onTherapyClick(child) }
+            viewDetailsButton.setOnClickListener { onViewProfileClick(child) }
         }
     }
 

@@ -94,7 +94,7 @@ class RegisterFragment : Fragment() {
 
         val body = json.toString().toRequestBody("application/json".toMediaType())
         val request = Request.Builder()
-            .url("http://10.0.2.2:8000/auth/register")
+            .url("${BuildConfig.BASE_URL}auth/register")
             .post(body)
             .build()
 

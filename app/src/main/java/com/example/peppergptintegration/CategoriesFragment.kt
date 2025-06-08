@@ -191,7 +191,7 @@ class CategoriesFragment : Fragment() {
             throw Exception("Not authenticated")
         }
 
-        val url = "http://10.0.2.2:8000/activities/categories/?page=$page"
+        val url = "${BuildConfig.BASE_URL}activities/categories/?page=$page"
         Log.d("API", "Fetching categories from: $url")
 
         val request = Request.Builder()

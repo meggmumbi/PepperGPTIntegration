@@ -67,6 +67,9 @@ class ChildListFragment : Fragment() {
             },
             onTherapyClick = { child ->
                 startTherapySession(child)
+            },
+            onViewProfileClick = { child ->
+                navigateToChildDetails(child.id)
             }
         )
 
@@ -126,7 +129,7 @@ class ChildListFragment : Fragment() {
             throw Exception("Not authenticated")
         }
 
-        val url = "http://10.0.2.2:8000/children/"
+        val url = "${BuildConfig.BASE_URL}children/"
         Log.d("API", "Attempting to fetch from: $url with token: ${token.take(5)}...")
 
         val request = Request.Builder()
@@ -181,9 +184,9 @@ class ChildListFragment : Fragment() {
     }
 
     private fun navigateToChildDetails(childId: String) {
-//        findNavController().navigate(
-//            ChildListFragmentDirections.actionChildListFragmentToChildDetailsFragment(childId)
-//        )
+      findNavController().navigate(
+            ChildListFragmentDirections.actionChildListFragmentToChildProfileFragment(childId)
+       )
     }
 
     private fun startTherapySession(child: Child) {

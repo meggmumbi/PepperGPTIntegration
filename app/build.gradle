@@ -10,6 +10,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'androidx.navigation.safeargs.kotlin'
     id 'kotlin-kapt'
+    id 'kotlin-parcelize'
 
 
 }
@@ -28,7 +29,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField "String", "BASE_URL", '"http://192.168.100.26:8000/"'
+        }
         release {
+            buildConfigField "String", "BASE_URL", '"http://192.168.100.26:8000/"'
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -59,7 +64,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 	implementation 'com.aldebaran:qisdk:1.7.5'
 	implementation 'com.aldebaran:qisdk-design:1.7.5'
-
+    implementation 'me.zhanghai.android.materialratingbar:library:1.4.0'
     // WebSocket
     implementation "org.java-websocket:Java-WebSocket:1.5.3"
 
@@ -89,6 +94,7 @@ dependencies {
 
     implementation "com.airbnb.android:lottie:5.2.0"
     implementation 'de.hdodenhof:circleimageview:3.1.0'
+
 }
 
 

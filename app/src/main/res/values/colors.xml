@@ -52,4 +52,21 @@
 
     <color name="errorLight">#FFCDD2</color>  <!-- Light red -->
     <color name="errorDark">#D32F2F</color>   <!-- Dark red -->
+
+    <color name="warning">#FFBC11</color>
+
+    <color name="warningContainer">#FFF2B8</color>
+    <color name="onWarningContainer">#332D00</color>
+
+    <!-- Success Colors -->
+    <color name="successContainer">#C8E6C9</color>
+    <color name="onSuccessContainer">#1B5E20</color>
+
+    <!-- ASD Color Palette -->
+    <color name="asd_surface">#FFF5F5F5</color> <!-- Soft white -->
+    <color name="asd_outline">#33000000</color> <!-- Very subtle outline -->
+    <color name="asd_success_text">#388E3C</color> <!-- Calm green -->
+    <color name="asd_neutral_text">#FFA000</color> <!-- Warm amber (not alarming red) -->
+    <color name="asd_primary_text">#424242</color> <!-- High-contrast but not stark black -->
+    <color name="asd_success_icon">#4CAF50</color> <!-- Muted success color -->
 </resources>

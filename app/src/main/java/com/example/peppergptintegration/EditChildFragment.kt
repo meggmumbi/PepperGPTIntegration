@@ -129,7 +129,7 @@ class EditChildFragment : Fragment() {
     }
 
     private suspend fun fetchChildDetails(childId: String, token: String): Child {
-        val url = "http://10.0.2.2:8000/children/$childId"
+        val url = "${BuildConfig.BASE_URL}children/$childId"
         val request = Request.Builder()
             .url(url)
             .addHeader("Authorization", "Bearer $token")
@@ -216,7 +216,7 @@ class EditChildFragment : Fragment() {
     }
 
     private suspend fun performUpdateChild(childId: String, token: String): Response {
-        val url = "http://10.0.2.2:8000/children/$childId"
+        val url = "${BuildConfig.BASE_URL}children/$childId"
 
         val json = JSONObject().apply {
             put("name", binding.nameEditText.text.toString())
@@ -282,7 +282,7 @@ class EditChildFragment : Fragment() {
     }
 
     private suspend fun performDeleteChild(childId: String, token: String): Response {
-        val url = "http://10.0.2.2:8000/children/$childId"
+        val url = "${BuildConfig.BASE_URL}children/$childId"
 
         val request = Request.Builder()
             .url(url)

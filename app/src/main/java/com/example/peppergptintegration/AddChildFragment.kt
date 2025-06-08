@@ -147,7 +147,7 @@ class AddChildFragment : Fragment() {
     }
 
     private suspend fun performCreateChild(token: String): Response {
-        val url = "http://10.0.2.2:8000/children/"
+        val url = "${BuildConfig.BASE_URL}children/"
 
         val json = JSONObject().apply {
             put("name", binding.nameEditText.text.toString())

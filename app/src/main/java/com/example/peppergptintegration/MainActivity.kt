@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RawRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -11,6 +12,8 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import com.aldebaran.qi.sdk.QiContext
 import com.aldebaran.qi.sdk.QiSDK
 import com.aldebaran.qi.sdk.RobotLifecycleCallbacks
+import com.aldebaran.qi.sdk.builder.AnimateBuilder
+import com.aldebaran.qi.sdk.builder.AnimationBuilder
 import com.aldebaran.qi.sdk.builder.SayBuilder
 import com.example.peppergptintegration.databinding.ActivityMainBinding
 import kotlinx.coroutines.*
@@ -89,7 +92,7 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
             }
 
             try {
-                val uri = URI("ws://10.0.2.2:8000/ws")
+                val uri = URI("ws://192.168.100.26:8000/ws")
                 webSocketClient = object : WebSocketClient(uri) {
                     override fun onOpen(handshakedata: ServerHandshake?) {
                         connectionAttempts = 0
@@ -215,6 +218,47 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
                         delay(1000)
                     }
                 }
+            }
+        }
+    }
+    // Add these helper methods:
+    fun runPepperAnimation(@RawRes animationRes: Int, duration: Long, callback: () -> Unit) {
+        if (!::qiContext.isInitialized) return
+        activityScope.launch {
+            try {
+                val animation = AnimationBuilder.with(qiContext)
+                    .withResources(animationRes)
+                    .buildAsync()
+                    .get()
+
+                AnimateBuilder.with(qiContext)
+                    .withAnimation(animation)
+                    .buildAsync()
+                    .get()
+                    .run()
+
+                delay(duration)
+                callback()
+            } catch (e: Exception) {
+                Log.e("Pepper", "Animation failed", e)
+                callback()
+            }
+        }
+    }
+
+    fun speakWithPepper(text: String, callback: () -> Unit = {}) {
+        if (!::qiContext.isInitialized) return
+        activityScope.launch {
+            try {
+                SayBuilder.with(qiContext)
+                    .withText(text)
+                    .buildAsync()
+                    .get()
+                    .run()
+                callback()
+            } catch (e: Exception) {
+                Log.e("Pepper", "Speech failed", e)
+                callback()
             }
         }
     }

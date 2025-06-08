@@ -158,7 +158,7 @@ class CreateCategoryFragment : Fragment() {
         val requestBody = json.toString().toRequestBody("application/json".toMediaType())
 
         val request = Request.Builder()
-            .url("http://10.0.2.2:8000/activities/categories/")
+            .url("${BuildConfig.BASE_URL}activities/categories/")
             .addHeader("Authorization", "Bearer $token")
             .addHeader("Accept", "application/json")
             .post(requestBody)

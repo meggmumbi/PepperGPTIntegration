@@ -65,5 +65,14 @@
             android:textColor="@color/colorPrimary"
             app:strokeColor="@color/colorPrimary"/>
 
+        <Button
+            android:id="@+id/viewChildDetailsButton"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="View Details"
+            android:textColor="@color/colorPrimary"/>
+
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

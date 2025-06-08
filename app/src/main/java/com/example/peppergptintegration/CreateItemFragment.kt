@@ -150,7 +150,7 @@ class CreateItemFragment : Fragment() {
 
         return client.newCall(
             Request.Builder()
-                .url("http://10.0.2.2:8000/activities/items/")
+                .url("${BuildConfig.BASE_URL}activities/items/")
                 .addHeader("Authorization", "Bearer $token")
                 .addHeader("Accept", "application/json")
                 .post(requestBody)

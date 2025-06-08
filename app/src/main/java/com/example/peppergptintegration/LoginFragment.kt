@@ -109,7 +109,7 @@ class LoginFragment : Fragment() {
     }
 
     private fun performLogin(username: String, password: String): TokenResponse {
-        val url = "http://10.0.2.2:8000/auth/login?username=$username&password=$password"
+        val url ="${BuildConfig.BASE_URL}auth/login?username=$username&password=$password"
 
         val request = Request.Builder()
             .url(url)

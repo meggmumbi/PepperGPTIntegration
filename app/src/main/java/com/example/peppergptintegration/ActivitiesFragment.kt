@@ -1,8 +1,14 @@
 package com.example.peppergptintegration
 
+import android.Manifest
+import android.app.Dialog
 import android.content.Context
+import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.media.MediaRecorder
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Handler
@@ -16,36 +22,53 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.aldebaran.qi.sdk.builder.AnimationBuilder
 import com.example.peppergptintegration.R
 import com.example.peppergptintegration.databinding.FragmentActivitiesBinding
 import com.example.peppergptintegration.TherapyItem
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
 import java.util.concurrent.TimeUnit
+import kotlin.math.max
 
 class ActivitiesFragment : Fragment() {
     companion object {
-        private const val MAX_RETRY_ATTEMPTS = 1  // Moved to companion object
+        private const val MAX_RETRY_ATTEMPTS = 1
+        private const val AUDIO_PERMISSION_REQUEST_CODE = 101
+        private const val CONNECTION_TIMEOUT = 30L
+        private const val CORRECT_ANIMATION = "affirmation_a005.qianim"
+        private const val CORRECT_ANIMATION_DURATION = 2160L
+        private const val INCORRECT_ANIMATION = "both_hands_on_hips_b001.qianim"
+        private const val INCORRECT_ANIMATION_DURATION = 1440L
     }
 
     private var _binding: FragmentActivitiesBinding? = null
     private val binding get() = _binding!!
     private val args: ActivitiesFragmentArgs by navArgs()
-    private val client = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .writeTimeout(30, TimeUnit.SECONDS)
-        .build()
+    private val client by lazy {
+        OkHttpClient.Builder()
+            .connectTimeout(CONNECTION_TIMEOUT, TimeUnit.SECONDS)
+            .readTimeout(CONNECTION_TIMEOUT, TimeUnit.SECONDS)
+            .writeTimeout(CONNECTION_TIMEOUT, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true)
+            .build()
+    }
 
     private var sessionId: String? = null
     private var currentItem: TherapyItem? = null
@@ -57,6 +80,12 @@ class ActivitiesFragment : Fragment() {
     private var currentAttempt = 0
     private var retryAttempts = 0
     private var lastSelectedOption: String? = null
+    private var audioRecorder: MediaRecorder? = null
+    private var audioFile: File? = null
+    private var isRecording = false
+    private var audioTimer: CountDownTimer? = null
+    private var feedbackPopup: Dialog? = null
+    private var isFeedbackInProgress = false
 
 
     override fun onCreateView(
@@ -71,13 +100,193 @@ class ActivitiesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        requestAudioPermissions()
+        setupAudioRecording()
         setupToolbar()
         setupClickListeners()
         setupResponseTypeToggle()
         startTherapySession()
         startSessionTimer()
     }
+    private fun requestAudioPermissions() {
+        val permissions = arrayOf(
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        )
 
+        if (permissions.any { ContextCompat.checkSelfPermission(requireContext(), it) != PackageManager.PERMISSION_GRANTED }) {
+            requestPermissions(permissions, AUDIO_PERMISSION_REQUEST_CODE)
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode == AUDIO_PERMISSION_REQUEST_CODE) {
+            if (grantResults.any { it != PackageManager.PERMISSION_GRANTED }) {
+                Toast.makeText(context, "Audio permissions are required", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    private fun setupAudioRecording() {
+        binding.recordButton.setOnClickListener {
+            if (isRecording) {
+                stopRecording()
+            } else {
+                startRecording()
+            }
+        }
+    }
+
+    private fun startRecording() {
+        try {
+            audioFile = File(requireContext().cacheDir, "audio_response.mp3")
+            if (audioFile?.exists() == true) {
+                audioFile?.delete()
+            }
+
+            audioRecorder = MediaRecorder().apply {
+                setAudioSource(MediaRecorder.AudioSource.MIC)
+                setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+                setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+                setAudioSamplingRate(16000)  // Important!
+                setAudioChannels(1)         // Mono
+                setAudioEncodingBitRate(128000)
+                setOutputFile(audioFile?.absolutePath)
+                prepare()
+                start()
+            }
+
+            isRecording = true
+            binding.recordButton.text = "Stop Recording"
+
+        } catch (e: Exception) {
+            Log.e("AudioRecording", "Failed to start recording", e)
+            Toast.makeText(context, "Recording failed to start", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun stopRecording() {
+        try {
+            audioRecorder?.apply {
+                stop()
+                release()
+            }
+            audioRecorder = null
+            isRecording = false
+            binding.recordButton.text = "Record Response"
+            (activity as? MainActivity)?.safeSay("Recording stopped")
+
+            // Process the recorded audio
+            audioFile?.let { file ->
+                if (file.exists() && file.length() > 0) {
+                    processAudioResponse(file)
+                } else {
+                    Toast.makeText(context, "Recording failed", Toast.LENGTH_SHORT).show()
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("AudioRecording", "Failed to stop recording", e)
+        }
+    }
+
+    private fun processAudioResponse(audioFile: File) {
+        currentItem?.let { item ->
+            showLoadingState()
+            (activity as? MainActivity)?.safeSay("Processing your response")
+            val responseTimeSeconds = (System.currentTimeMillis() - responseStartTime) / 1000
+            lifecycleScope.launch {
+                try {
+                    val response = withContext(Dispatchers.IO) {
+                        sendAudioToApi(
+                            sessionId = sessionId!!,
+                            itemId = item.id,
+                            response_time_seconds = responseTimeSeconds,
+                            audioFile = audioFile
+                        )
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        if (response != null) {
+                            val isCorrect = response.analysis.is_correct
+
+                            // Show appropriate feedback (correct/incorrect)
+                            showAudioFeedback(isCorrect, response.analysis.feedback)
+
+                            if (isCorrect) {
+                                // Correct response - proceed to next item
+                                isProcessingResponse = true
+                                Handler(Looper.getMainLooper()).postDelayed({
+                                    fetchNextItem()
+                                }, 2000) // Delay to allow user to see feedback
+                            } else if (retryAttempts < MAX_RETRY_ATTEMPTS) {
+                                // Incorrect but can retry
+                                retryAttempts++
+                                Handler(Looper.getMainLooper()).postDelayed({
+                                    (activity as? MainActivity)?.safeSay("Try again. Listen and say: ${item.name}")
+                                      hideLoadingState()
+                                }, 2000)
+                            } else {
+                                // Final incorrect attempt - proceed to next item
+                                isProcessingResponse = true
+                                Handler(Looper.getMainLooper()).postDelayed({
+                                    fetchNextItem()
+                                }, 2000)
+                            }
+                        } else {
+                            showErrorState("Failed to process audio response")
+                        }
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        showErrorState("Error processing audio: ${e.message}")
+                    }
+                }
+            }
+        }
+    }
+    private suspend fun sendAudioToApi(
+        sessionId: String,
+        itemId: String,
+        response_time_seconds: Long,
+        audioFile: File
+    ): AudioResponse? {
+        val token = getAuthToken() ?: throw Exception("Not authenticated")
+
+        return try {
+            val requestBody = MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart(
+                    "audio_file",
+                    audioFile.name,
+                    audioFile.asRequestBody("audio/mpeg".toMediaTypeOrNull())
+                )
+                .build()
+
+            val request = Request.Builder()
+                .url("${BuildConfig.BASE_URL}speech/sessions/$sessionId/process-audio?item_id=$itemId&response_time_seconds=$response_time_seconds")
+                .addHeader("Authorization", "Bearer $token")
+                .addHeader("Accept", "application/json")
+                .post(requestBody)
+                .build()
+
+            val response = client.newCall(request).execute()
+            if (response.isSuccessful) {
+                response.body?.string()?.let { json ->
+                    val gson = Gson()
+                    gson.fromJson(json, AudioResponse::class.java)
+                }
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.e("AudioUpload", "Error sending audio", e)
+            null
+        }
+    }
     private fun setupToolbar() {
         binding.toolbar.setNavigationOnClickListener {
             showEndSessionConfirmation()
@@ -185,7 +394,7 @@ class ActivitiesFragment : Fragment() {
 
     private suspend fun fetchNonverbalOptions(itemId: String): List<NonverbalOption> {
         val token = getAuthToken() ?: throw Exception("Not authenticated")
-        val url = "http://10.0.2.2:8000/activities/sessions/${sessionId}/selection-options/$itemId"
+        val url = "${BuildConfig.BASE_URL}activities/sessions/${sessionId}/selection-options/$itemId"
 
         try {
             val response = client.newCall(
@@ -283,10 +492,13 @@ class ActivitiesFragment : Fragment() {
 
                 if (isCorrect) {
                     isProcessingResponse = true
+
+                    showFeedbackAndProceed(true, item.id, selectedOption)
                     recordResponse(item.id, true, selectedOption)
                 } else if (retryAttempts < MAX_RETRY_ATTEMPTS) {
                     // First or second incorrect attempt: allow retry
                     retryAttempts++
+                    showFeedbackAndProceed(false, item.id, selectedOption)
 
                     chip.setChipBackgroundColorResource(R.color.errorLight)
                     chip.setTextColor(ContextCompat.getColor(requireContext(), R.color.errorDark))
@@ -301,6 +513,8 @@ class ActivitiesFragment : Fragment() {
                 } else {
                     // Final incorrect attempt
                     isProcessingResponse = true
+
+                    showFeedbackAndProceed(false, item.id, selectedOption)
                     recordResponse(item.id, false, selectedOption)
                 }
             }
@@ -323,31 +537,34 @@ class ActivitiesFragment : Fragment() {
 
         lifecycleScope.launch {
             try {
-                val response = withContext(Dispatchers.IO) {
-                    startSessionOnApi(args.childId, args.categoryId, args.difficultyLevel)
+                val responseBodyString = withContext(Dispatchers.IO) {
+                    val response = startSessionOnApi(args.childId, args.categoryId, args.difficultyLevel)
+                    if (response.isSuccessful) {
+                        response.body?.string()
+                    } else {
+                        val errorBody = response.body?.string() ?: "No error message"
+                        throw Exception("Failed to start session: ${response.code} - $errorBody")
+                    }
                 }
 
-                if (response.isSuccessful) {
-                    val sessionResponse = parseSessionResponse(response.body?.string())
-                    if (sessionResponse != null) {
-                        sessionId = sessionResponse.sessionId
-                        fetchNextItem()
-                        (activity as? MainActivity)?.safeSay("Session started. Here's your first item.")
-                    } else {
-                        showErrorState("Failed to parse session response")
-                        (activity as? MainActivity)?.safeSay("Failed to start session. Please try again.")
-                    }
+                val sessionResponse = parseSessionResponse(responseBodyString)
+                if (sessionResponse != null) {
+                    sessionId = sessionResponse.sessionId
+                    fetchNextItem()
+                    (activity as? MainActivity)?.safeSay("Session started. Here's your first item.")
                 } else {
-                    val errorBody = response.body?.string() ?: "No error message"
-                    showErrorState("Failed to start session: ${response.code} - $errorBody")
-                    (activity as? MainActivity)?.safeSay("Error starting session. Code ${response.code}.")
+                    showErrorState("Failed to parse session response")
+                    (activity as? MainActivity)?.safeSay("Failed to start session. Please try again.")
                 }
+
             } catch (e: Exception) {
                 showErrorState("Network error: ${e.message} during start therapy session")
+                Log.e("TherapySession", "Exception during session start", e)
                 (activity as? MainActivity)?.safeSay("Network error. Please check your connection.")
             }
         }
     }
+
 
     private suspend fun startSessionOnApi(
         childId: String,
@@ -366,7 +583,7 @@ class ActivitiesFragment : Fragment() {
 
         return client.newCall(
             Request.Builder()
-                .url("http://10.0.2.2:8000/activities/sessions/")
+                .url("${BuildConfig.BASE_URL}activities/sessions/")
                 .addHeader("Authorization", "Bearer $token")
                 .addHeader("Accept", "application/json")
                 .post(requestBody)
@@ -392,55 +609,65 @@ class ActivitiesFragment : Fragment() {
     private fun fetchNextItem() {
         sessionId?.let { id ->
             lifecycleScope.launch {
-                try {
-                    val (item, error) = withContext(Dispatchers.IO) {
+                var attempt = 0
+                var success = false
+
+                while (!success && attempt < MAX_RETRY_ATTEMPTS) {
+                    attempt++
+
+                    val (item, error, isSessionComplete) = withContext(Dispatchers.IO) {
                         try {
                             val response = getNextItemFromApi(id)
+                            val bodyString = response.body?.string()
 
-                            if (response.isSuccessful) {
-                                val responseBody = response.body?.string()
-                                if (!responseBody.isNullOrBlank()) {
-                                    try {
-                                        Pair(parseTherapyItem(responseBody), null)
-                                    } catch (e: Exception) {
-                                        Log.e("FetchNextItem", "Parsing error", e)
-                                        Pair(null, "Data parsing error: ${e.message}")
-                                    }
+                            if (response.isSuccessful && !bodyString.isNullOrBlank()) {
+                                val json = JSONObject(bodyString)
+                                if (json.optString("status") == "completed") {
+                                    Triple(null, null, true)
                                 } else {
-                                    Log.w("FetchNextItem", "Empty response body")
-                                    Pair(null, "Empty response from server")
+                                    Triple(parseTherapyItem(bodyString), null, false)
                                 }
                             } else {
-                                val errorBody = response.body?.string() ?: "No error details"
-                                Log.e("FetchNextItem", "API error ${response.code}: $errorBody")
-                                Pair(null, "API error: ${response.code} - $errorBody")
+                                val errorMsg = "API error: ${response.code} - ${bodyString ?: "Empty body"}"
+                                Triple(null, errorMsg, false)
                             }
                         } catch (e: Exception) {
-                            Log.e("FetchNextItem", "Network error", e)
-                            Pair(null, "Network error: ${e.message ?: "Unknown error"}")
+                            Triple(null, "Network error: ${e.message}", false)
                         }
                     }
 
-                    withContext(Dispatchers.Main) {
-                        when {
-                            item != null -> {
-                                currentItem = item
-                                showContentState(item)
-                                Log.d("FetchNextItem", "Successfully loaded item: ${item.name}")
+                    if (item != null || isSessionComplete || attempt == MAX_RETRY_ATTEMPTS) {
+                        withContext(Dispatchers.Main) {
+                            when {
+                                item != null -> {
+                                    currentItem = item
+                                    showContentState(item)
+                                    success = true
+                                    Log.d("FetchNextItem", "Success after $attempt attempts")
+                                }
+                                isSessionComplete -> {
+                                    fetchSessionOverview()
+                                    success = true
+                                }
+                                error != null -> {
+                                    showErrorState(error)
+                                    Log.w("FetchNextItem", "Failed after $attempt attempts: $error")
+                                    success = true
+                                }
+                                else -> {
+                                    showErrorState("Unknown response from server")
+                                    Log.e("FetchNextItem", "Unknown error after $attempt attempts")
+                                    success = true
+                                }
                             }
-                            error != null -> showErrorState(error)
-                            else -> showEmptyState()
                         }
-                    }
-                } catch (e: Exception) {
-                    withContext(Dispatchers.Main) {
-                        showErrorState("Unexpected error: ${e.message}")
-                        Log.e("FetchNextItem", "Unexpected error", e)
                     }
                 }
             }
         } ?: showErrorState("Session not started")
     }
+
+
 
     private suspend fun getNextItemFromApi(sessionId: String): Response {
         val token = getAuthToken() ?: throw Exception("Not authenticated")
@@ -448,7 +675,7 @@ class ActivitiesFragment : Fragment() {
         return try {
             client.newCall(
                 Request.Builder()
-                    .url("http://10.0.2.2:8000/activities/sessions/$sessionId/next-item")
+                    .url("${BuildConfig.BASE_URL}activities/sessions/$sessionId/next-item")
                     .addHeader("Authorization", "Bearer $token")
                     .addHeader("Accept", "application/json")
                     .build()
@@ -544,7 +771,7 @@ class ActivitiesFragment : Fragment() {
         val requestBody = json.toString().toRequestBody("application/json".toMediaType())
 
         val request = Request.Builder()
-            .url("http://10.0.2.2:8000/activities/sessions/$sessionId/record-response")
+            .url("${BuildConfig.BASE_URL}activities/sessions/$sessionId/record-response")
             .addHeader("Authorization", "Bearer $token")
             .addHeader("Accept", "application/json")
             .post(requestBody)
@@ -584,7 +811,7 @@ class ActivitiesFragment : Fragment() {
         val requestBody = json.toString().toRequestBody("application/json".toMediaType())
 
         val request = Request.Builder()
-            .url("http://10.0.2.2:8000/activities/sessions/$sessionId/responses")
+            .url("${BuildConfig.BASE_URL}activities/sessions/$sessionId/responses")
             .addHeader("Authorization", "Bearer $token")
             .addHeader("Accept", "application/json")
             .post(requestBody)
@@ -617,6 +844,12 @@ class ActivitiesFragment : Fragment() {
     private fun showLoadingState() {
         binding.loadingStateView.visibility = View.VISIBLE
         binding.contentStateView.visibility = View.GONE
+        binding.emptyStateView.visibility = View.GONE
+        binding.errorStateView.visibility = View.GONE
+    }
+    private fun hideLoadingState() {
+        binding.loadingStateView.visibility = View.GONE
+        binding.contentStateView.visibility = View.VISIBLE
         binding.emptyStateView.visibility = View.GONE
         binding.errorStateView.visibility = View.GONE
     }
@@ -668,9 +901,209 @@ class ActivitiesFragment : Fragment() {
         binding.errorStateView.visibility = View.VISIBLE
     }
 
+    private fun fetchSessionOverview() {
+        sessionId?.let { id ->
+            showLoadingState()
+            lifecycleScope.launch {
+                try {
+                    val overview = withContext(Dispatchers.IO) {
+                        val response = client.newCall(
+                            Request.Builder()
+                                .url("${BuildConfig.BASE_URL}analytics/sessions/$id/overview")
+                                .addHeader("Authorization", "Bearer ${getAuthToken()}")
+                                .addHeader("Accept", "application/json")
+                                .build()
+                        ).execute()
+
+                        if (response.isSuccessful) {
+                            response.body?.string()?.let { parseSessionOverview(it) }
+                        } else {
+                            null
+                        }
+                    }
+
+                    overview?.let {
+                        navigateToSessionOverview(it)
+                    } ?: showErrorState("Failed to load session overview")
+                } catch (e: Exception) {
+                    showErrorState("Error loading overview: ${e.message}")
+                }
+            }
+        }
+    }
+    private fun parseSessionOverview(json: String): SessionOverview {
+        val data = JSONObject(json)
+        return SessionOverview(
+            sessionId = data.getString("session_id"),
+            childName = data.getString("child_name"),
+            categoryName = data.getString("category_name"),
+            startTime = data.getString("start_time"),
+            durationMinutes = data.getDouble("duration_minutes"),
+            totalActivities = data.getInt("total_activities"),
+            correctAnswers = data.getInt("correct_answers"),
+            accuracyPercentage = data.getDouble("accuracy_percentage"),
+            averageResponseTime = data.getInt("average_response_time"),
+            activities = data.getJSONArray("activities").let { array ->
+                (0 until array.length()).map { i ->
+                    val item = array.getJSONObject(i)
+                    SessionActivity(
+                        itemName = item.getString("item_name"),
+                        responseType = item.getString("response_type"),
+                        isCorrect = item.getBoolean("is_correct"),
+                        pronunciationScore = item.getInt("pronunciation_score"),
+                        responseTime = item.getInt("response_time"),
+                        feedback = item.optString("feedback")
+                    )
+                }
+            },
+            strengths = data.getJSONArray("strengths").let { array ->
+                (0 until array.length()).map { i -> array.getString(i) }
+            },
+            areasForImprovement = data.getJSONArray("areas_for_improvement").let { array ->
+                (0 until array.length()).map { i -> array.getString(i) }
+            },
+            recommendations = data.getJSONArray("recommendations").let { array ->
+                (0 until array.length()).map { i -> array.getString(i) }
+            }
+        )
+    }
+
+    private fun navigateToSessionOverview(overview: SessionOverview) {
+        val directions = ActivitiesFragmentDirections.actionActivitiesFragmentToSessionOverviewFragment(overview,args.childId)
+        findNavController().navigate(directions)
+    }
+
     private fun getAuthToken(): String? {
         return activity?.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
             ?.getString("auth_token", null)
+    }
+
+
+
+    private fun showFeedbackPopup(isCorrect: Boolean): Dialog {
+        return Dialog(requireContext()).apply {
+            window?.apply {
+                setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                setDimAmount(0.3f)
+
+            }
+            setContentView(if (isCorrect) R.layout.popup_correct_feedback
+            else R.layout.popup_incorrect_feedback)
+            setCancelable(false)
+            setCanceledOnTouchOutside(false)
+            show()
+        }
+    }
+
+    private fun showFeedbackAndProceed(isCorrect: Boolean, itemId: String, selectedOption: String?) {
+        if (isFeedbackInProgress) return
+        isFeedbackInProgress = true
+
+        // 1. Immediately show the popup
+        feedbackPopup = showFeedbackPopup(isCorrect)
+        disableAllResponseOptions()
+
+        val (animationRes, speechText) = if (isCorrect) {
+            Pair(R.raw.affirmation_a005, "Yay! That's correct, let's go to the next item.")
+        } else {
+            Pair(R.raw.both_hands_on_hips_b001, "Oops, incorrect, let's try again.")
+        }
+
+        (activity as? MainActivity)?.let { mainActivity ->
+            // 2. Start Pepper's animation and speech together
+            val startTime = System.currentTimeMillis()
+
+            mainActivity.runPepperAnimation(animationRes,
+                if (isCorrect) CORRECT_ANIMATION_DURATION else INCORRECT_ANIMATION_DURATION
+            ) {
+                Log.d("Feedback", "Animation completed")
+            }
+
+            mainActivity.speakWithPepper(speechText) {
+                Log.d("Feedback", "Speech completed")
+            }
+
+            // 3. Calculate total expected duration
+            val totalDuration = max(
+                if (isCorrect) CORRECT_ANIMATION_DURATION else INCORRECT_ANIMATION_DURATION,
+                speechText.length * 100L // Approximate speech duration
+            ) + 500 // Buffer time
+
+            // 4. Wait for the full experience to complete
+            Handler(Looper.getMainLooper()).postDelayed({
+                dismissFeedbackPopup()
+
+                isFeedbackInProgress = false
+            }, totalDuration)
+
+        } ?: run {
+            // Fallback mode without Pepper
+            Handler(Looper.getMainLooper()).postDelayed({
+                dismissFeedbackPopup()
+              //  recordResponse(itemId, isCorrect, selectedOption)
+                isFeedbackInProgress = false
+            }, if (isCorrect) 2500 else 2000)
+        }
+    }
+
+    private fun showAudioFeedback(isCorrect: Boolean, feedback: String) {
+        if (isFeedbackInProgress) return
+        isFeedbackInProgress = true
+
+        // 1. Immediately show the popup
+        feedbackPopup = showFeedbackPopup(isCorrect)
+        disableAllResponseOptions()
+
+        val (animationRes, speechText) = if (isCorrect) {
+            Pair(R.raw.affirmation_a005, "Yay! That's correct, let's go to the next item.")
+        } else {
+            Pair(R.raw.both_hands_on_hips_b001, "Oops, incorrect, let's try again.")
+        }
+
+        (activity as? MainActivity)?.let { mainActivity ->
+            // 2. Start Pepper's animation and speech together
+            val startTime = System.currentTimeMillis()
+
+            mainActivity.runPepperAnimation(animationRes,
+                if (isCorrect) CORRECT_ANIMATION_DURATION else INCORRECT_ANIMATION_DURATION
+            ) {
+                Log.d("Feedback", "Animation completed")
+            }
+
+            mainActivity.speakWithPepper(speechText) {
+                Log.d("Feedback", "Speech completed")
+            }
+
+            // 3. Calculate total expected duration
+            val totalDuration = max(
+                if (isCorrect) CORRECT_ANIMATION_DURATION else INCORRECT_ANIMATION_DURATION,
+                speechText.length * 100L // Approximate speech duration
+            ) + 500 // Buffer time
+
+            // 4. Wait for the full experience to complete
+            Handler(Looper.getMainLooper()).postDelayed({
+                dismissFeedbackPopup()
+
+                isFeedbackInProgress = false
+            }, totalDuration)
+
+        } ?: run {
+            // Fallback mode without Pepper
+            Handler(Looper.getMainLooper()).postDelayed({
+                dismissFeedbackPopup()
+                isFeedbackInProgress = false
+            }, if (isCorrect) 2500 else 2000)
+        }
+    }
+
+
+    private fun dismissFeedbackPopup() {
+        try {
+            feedbackPopup?.takeIf { it.isShowing }?.dismiss()
+        } catch (e: Exception) {
+            Log.e("Feedback", "Error dismissing popup", e)
+        }
+        feedbackPopup = null
     }
 
     override fun onDestroyView() {
@@ -698,6 +1131,19 @@ data class NonverbalOption(
     val text: String,
     val icon: String? = null  // Made optional
 )
+
+data class AudioResponse(
+    val transcription: String,
+    val analysis: Analysis,
+    val activity_id: String
+) {
+    data class Analysis(
+        val is_correct: Boolean,
+        val similarity_score: Float,
+        val feedback: String,
+        val phonetic_similarity: Float
+    )
+}
 
 // Extension function to convert dp to pixels
 fun Float.dpToPx(context: Context): Float {

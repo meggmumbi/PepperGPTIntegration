@@ -27,7 +27,7 @@ class WebSocketManager(
                 return
             }
 
-            val uri = URI("ws://10.0.2.2:8000/ws")
+            val uri = URI("ws://192.168.100.26:8000/ws")
             webSocketClient = object : WebSocketClient(uri) {
                 override fun onOpen(handshakedata: ServerHandshake?) {
                     connectionAttempts = 0
