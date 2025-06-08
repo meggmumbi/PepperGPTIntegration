@@ -44,7 +44,7 @@ class AddChildFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupToolbar()
+//        setupToolbar()
         setupDatePicker()
         setupClickListeners()
 
@@ -52,11 +52,11 @@ class AddChildFragment : Fragment() {
         (activity as? MainActivity)?.safeSay("Let's create a new child profile. Please provide the child's details.")
     }
 
-    private fun setupToolbar() {
-        binding.toolbar.setNavigationOnClickListener {
-            findNavController().navigateUp()
-        }
-    }
+//    private fun setupToolbar() {
+//        binding.toolbar.setNavigationOnClickListener {
+//            findNavController().navigateUp()
+//        }
+//    }
 
     private fun setupDatePicker() {
         binding.diagnosisDateEditText.setOnClickListener {

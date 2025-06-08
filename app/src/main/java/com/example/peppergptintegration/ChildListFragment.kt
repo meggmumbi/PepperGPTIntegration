@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.peppergptintegration.databinding.FragmentChildListBinding
 import com.example.peppergptintegration.Child
@@ -74,7 +75,7 @@ class ChildListFragment : Fragment() {
         )
 
         binding.childRecyclerView.apply {
-            layoutManager = LinearLayoutManager(requireContext())
+            layoutManager = GridLayoutManager(requireContext(), 3)
             adapter = childAdapter
             setHasFixedSize(true)
         }

@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.peppergptintegration.databinding.FragmentCategoriesBinding
 import androidx.recyclerview.widget.RecyclerView
@@ -93,7 +94,7 @@ class CategoriesFragment : Fragment() {
         )
 
         binding.categoriesRecyclerView.apply {
-            layoutManager = LinearLayoutManager(requireContext())
+            layoutManager = GridLayoutManager(requireContext(), 3)
             adapter = categoriesAdapter
             setHasFixedSize(true)
 

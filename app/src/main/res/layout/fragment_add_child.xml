@@ -2,26 +2,24 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_gradient">
+    android:background="#FFFFFF">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+<!--    <com.google.android.material.appbar.AppBarLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:background="#6EC6FF">-->
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:title="Add New Child"
-            app:titleTextColor="@color/white"
-            app:navigationIcon="@drawable/ic_back"
-            app:navigationIconTint="@color/white"/>
-
-    </com.google.android.material.appbar.AppBarLayout>
+<!--        <com.google.android.material.appbar.MaterialToolbar-->
+<!--            android:id="@+id/toolbar"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="?attr/actionBarSize"-->
+<!--            app:title="Add New Child"-->
+<!--            app:titleTextColor="#FFFFFF"-->
+<!--            app:navigationIcon="@drawable/ic_back"-->
+<!--            app:navigationIconTint="#FFFFFF"/>-->
+<!--    </com.google.android.material.appbar.AppBarLayout>-->
 
     <ScrollView
         android:layout_width="match_parent"
@@ -34,21 +32,21 @@
             android:orientation="vertical"
             android:padding="24dp">
 
-            <!-- Profile Picture -->
+            <!-- Profile Picture Centered at Top -->
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="32dp">
 
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/profileImage"
-                    android:layout_width="120dp"
-                    android:layout_height="120dp"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
                     android:layout_gravity="center"
                     android:src="@drawable/ic_person"
-                    app:civ_border_color="@color/white"
-                    app:civ_border_width="2dp"/>
+                    app:civ_border_color="#D4BFFF"
+                    app:civ_border_width="4dp"/>
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/addPhotoButton"
@@ -56,77 +54,77 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="bottom|end"
                     android:src="@drawable/ic_camera"
-                    app:backgroundTint="@color/colorPrimary"
+                    app:backgroundTint="#FFA474"
                     app:fabSize="mini"
-                    app:tint="@color/white"/>
+                    app:tint="#FFFFFF"/>
             </FrameLayout>
 
-            <!-- Name Field -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/nameInputLayout"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            <!-- Two Column Layout -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:hint="Child's Name"
-                app:boxStrokeColor="@color/white"
-                app:hintTextColor="@color/white"
-                app:endIconMode="clear_text"
-                app:endIconTint="@color/white">
+                android:orientation="horizontal"
+                android:baselineAligned="false"
+                android:weightSum="1">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/nameEditText"
+                <!-- Left Column (Weight: 0.55) -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.55"
+                    android:orientation="vertical"
+                    android:paddingEnd="16dp">
+
+                    <!-- Name Field -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/nameInputLayout"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:hint="Child's Name"
+                        app:boxStrokeColor="#6EC6FF"
+                        app:hintTextColor="#B0BEC5"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp"
+                        app:endIconMode="clear_text"
+                        app:endIconTint="#6EC6FF">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/nameEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPersonName"
+                        android:textColor="#37474F"
+                        android:textColorHint="#B0BEC5"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Areas of Interest Dropdown -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/interestsInputLayout"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textPersonName"
-                    android:textColor="@color/white"
-                    android:textColorHint="@color/card_background"/>
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:layout_marginBottom="16dp"
+                    android:hint="Areas of Interest"
+                    app:boxStrokeColor="#6EC6FF"
+                    app:hintTextColor="#B0BEC5"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:endIconMode="dropdown_menu"
+                    app:endIconTint="#6EC6FF">
 
-            <!-- Age Field -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/ageInputLayout"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:hint="Age"
-                app:boxStrokeColor="@color/white"
-                app:hintTextColor="@color/white"
-                app:endIconMode="clear_text"
-                app:endIconTint="@color/white">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/ageEditText"
+                <AutoCompleteTextView
+                    android:id="@+id/interestsDropdown"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="number"
-                    android:textColor="@color/white"
-                    android:textColorHint="@color/card_background"/>
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Diagnosis Date Field -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/diagnosisDateInputLayout"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:hint="Diagnosis Date"
-                app:boxStrokeColor="@color/white"
-                app:hintTextColor="@color/white"
-                app:endIconMode="custom"
-                app:endIconDrawable="@drawable/ic_calendar"
-                app:endIconTint="@color/white">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/diagnosisDateEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:clickable="true"
-                    android:focusable="false"
-                    android:textColor="@color/white"
-                    android:textColorHint="@color/card_background"/>
+                    android:textColor="#37474F"
+                    android:textColorHint="#B0BEC5"
+                    android:inputType="none"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Notes Field -->
@@ -135,44 +133,143 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
+                android:layout_marginBottom="16dp"
                 android:hint="Notes (Optional)"
-                app:boxStrokeColor="@color/white"
-                app:hintTextColor="@color/white"
+                app:boxStrokeColor="#6EC6FF"
+                app:hintTextColor="#B0BEC5"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
                 app:counterEnabled="true"
                 app:counterMaxLength="500">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/notesEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="120dp"
-                    android:gravity="top"
-                    android:inputType="textMultiLine"
-                    android:maxLength="500"
-                    android:textColor="@color/white"
-                    android:textColorHint="@color/card_background"/>
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Submit Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/submitButton"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/notesEditText"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Save Child Profile"
-                android:textAllCaps="false"
-                app:icon="@drawable/ic_save"
-                app:iconTint="@color/white"
-                app:backgroundTint="@color/colorPrimary"/>
+                android:layout_height="120dp"
+                android:gravity="top"
+                android:inputType="textMultiLine"
+                android:maxLength="500"
+                android:textColor="#37474F"
+                android:textColorHint="#B0BEC5"/>
+        </com.google.android.material.textfield.TextInputLayout>
+    </LinearLayout>
 
-            <!-- Progress Indicator -->
-            <com.google.android.material.progressindicator.LinearProgressIndicator
-                android:id="@+id/progressIndicator"
-                android:layout_width="match_parent"
-                android:layout_height="4dp"
-                android:indeterminate="true"
-                android:visibility="gone"
-                app:indicatorColor="@color/white"/>
-        </LinearLayout>
+    <!-- Right Column (Weight: 0.45) -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.45"
+        android:orientation="vertical">
+
+        <!-- Age Field -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/ageInputLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Age"
+            app:boxStrokeColor="#6EC6FF"
+            app:hintTextColor="#B0BEC5"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:endIconMode="clear_text"
+            app:endIconTint="#6EC6FF">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/ageEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:textColor="#37474F"
+            android:textColorHint="#B0BEC5"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Diagnosis Date Field -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/diagnosisDateInputLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:hint="Diagnosis Date"
+        app:boxStrokeColor="#6EC6FF"
+        app:hintTextColor="#B0BEC5"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:endIconMode="custom"
+        app:endIconDrawable="@drawable/ic_calendar"
+        app:endIconTint="#6EC6FF">
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/diagnosisDateEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:focusable="false"
+        android:textColor="#37474F"
+        android:textColorHint="#B0BEC5"/>
+</com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Therapy Goals Field -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/goalsInputLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:hint="Therapy Goals"
+        app:boxStrokeColor="#6EC6FF"
+        app:hintTextColor="#B0BEC5"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:counterEnabled="true"
+        app:counterMaxLength="500">
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/goalsEditText"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:gravity="top"
+        android:inputType="textMultiLine"
+        android:maxLength="500"
+        android:textColor="#37474F"
+        android:textColorHint="#B0BEC5"/>
+    </com.google.android.material.textfield.TextInputLayout>
+    </LinearLayout>
+    </LinearLayout>
+
+    <!-- Submit Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/submitButton"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="24dp"
+        android:text="Save Child Profile"
+        android:textAllCaps="false"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        app:icon="@drawable/ic_save"
+        app:iconTint="#FFFFFF"
+        app:backgroundTint="#FFA474"
+        app:cornerRadius="12dp"/>
+
+    <!-- Progress Indicator -->
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/progressIndicator"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:indeterminate="true"
+        android:visibility="gone"
+        app:indicatorColor="#6EC6FF"/>
+    </LinearLayout>
     </ScrollView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

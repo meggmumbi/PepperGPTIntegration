@@ -2,26 +2,9 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/card_background">
-
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
-
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:title="Create New Item"
-            app:titleTextColor="@color/white"
-            app:navigationIcon="@drawable/ic_back"
-            app:navigationIconTint="@color/white"/>
-
-    </com.google.android.material.appbar.AppBarLayout>
+    android:background="#FFFFFF">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -34,121 +17,166 @@
             android:orientation="vertical"
             android:padding="24dp">
 
-            <!-- Name Field -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/nameInputLayout"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            <!-- Name and Difficulty Row -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:hint="Item Name"
-                app:boxStrokeColor="@color/white"
-                app:hintTextColor="@color/white"
+                android:orientation="horizontal"
+                android:baselineAligned="false"
+                android:weightSum="1">
+
+                <!-- Name Field (Left - 60%) -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/nameInputLayout"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.6"
+                    android:layout_marginEnd="16dp"
+                    android:hint="Item Name"
+                    app:boxStrokeColor="#6EC6FF"
+                app:hintTextColor="#B0BEC5"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
                 app:endIconMode="clear_text"
-                app:endIconTint="@color/white"
-                app:errorTextColor="@color/error">
+                app:endIconTint="#6EC6FF">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/nameEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textCapWords"
-                    android:textColor="@color/white"
-                    android:textColorHint="@color/white_50_percent"/>
+                    android:textColor="#37474F"
+                android:textColorHint="#B0BEC5"/>
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Difficulty Level Dropdown -->
+            <!-- Difficulty Field (Right - 40%) -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/difficultyInputLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.4"
+                android:hint="Difficulty"
+                app:boxStrokeColor="#6EC6FF"
+            app:hintTextColor="#B0BEC5"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+            app:endIconMode="dropdown_menu"
+            app:endIconTint="#6EC6FF">
+
+            <AutoCompleteTextView
+                android:id="@+id/difficultyAutoCompleteTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:hint="Difficulty Level"
-                app:boxStrokeColor="@color/white"
-                app:hintTextColor="@color/white"
-                app:endIconMode="dropdown_menu"
-                app:endIconTint="@color/white"
-                app:errorTextColor="@color/error">
+                android:inputType="none"
+                android:textColor="#37474F"
+            android:textColorHint="#B0BEC5"/>
+        </com.google.android.material.textfield.TextInputLayout>
+    </LinearLayout>
 
-                <AutoCompleteTextView
-                    android:id="@+id/difficultyAutoCompleteTextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="none"
-                    android:textColor="@color/white"
-                    android:textColorHint="@color/white_50_percent"/>
-            </com.google.android.material.textfield.TextInputLayout>
+    <!-- Description Field (Full Width) -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/descriptionInputLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="Description"
+        app:boxStrokeColor="#6EC6FF"
+    app:hintTextColor="#B0BEC5"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+    app:endIconMode="clear_text"
+    app:endIconTint="#6EC6FF">
 
-            <!-- Generate Image Checkbox -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                app:cardBackgroundColor="@color/cardBackground"
-                app:cardCornerRadius="8dp"
-                app:strokeColor="@color/colorPrimaryLight"
-                app:strokeWidth="1dp">
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/descriptionEditText"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:gravity="top"
+        android:inputType="textMultiLine"
+        android:textColor="#37474F"
+    android:textColorHint="#B0BEC5"/>
+</com.google.android.material.textfield.TextInputLayout>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+    <!-- Image Generation Card -->
+<com.google.android.material.card.MaterialCardView
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:layout_marginTop="16dp"
+android:layout_marginBottom="24dp"
+app:cardBackgroundColor="#FFFFFF"
+    app:cardCornerRadius="12dp"
+    app:strokeColor="#D4BFFF"
+    app:strokeWidth="1dp">
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Image Generation"
-                        android:textColor="@color/white"
-                        android:textSize="16sp"
-                        android:textStyle="bold"/>
+<LinearLayout
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:orientation="vertical"
+android:padding="16dp">
 
-                    <com.google.android.material.checkbox.MaterialCheckBox
-                        android:id="@+id/generateImageCheckBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Generate AI Image"
-                        android:textColor="@color/white"
-                        app:buttonTint="@color/colorPrimary"/>
+<TextView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="Image Options"
+    android:textColor="#37474F"
+android:textSize="16sp"
+android:textStyle="bold"/>
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Check to automatically generate an image for this item"
-                        android:textColor="@color/white_50_percent"
-                        android:textSize="12sp"/>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+<com.google.android.material.checkbox.MaterialCheckBox
+    android:id="@+id/generateImageCheckBox"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="8dp"
+    android:text="Generate AI Image"
+    android:textColor="#37474F"
+app:buttonTint="#6EC6FF"
+app:useMaterialThemeColors="false"/>
 
-            <!-- Create Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/createButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Create Item"
-                android:textAllCaps="false"
-                android:textSize="16sp"
-                app:backgroundTint="@color/colorPrimary"
-                app:cornerRadius="8dp"
-                app:icon="@drawable/ic_add_child"
-                app:iconTint="@color/white"
-                app:rippleColor="@color/colorPrimaryDark"/>
+<TextView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="4dp"
+    android:text="Automatically create a matching image for this item"
+    android:textColor="#B0BEC5"
+android:textSize="12sp"/>
+</LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
-            <!-- Loading Progress -->
-            <ProgressBar
-                android:id="@+id/progressBar"
-                style="?android:attr/progressBarStyleLarge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="16dp"
-                android:visibility="gone"/>
+    <!-- Create Button -->
+<com.google.android.material.button.MaterialButton
+android:id="@+id/createButton"
+android:layout_width="match_parent"
+android:layout_height="56dp"
+android:layout_marginTop="16dp"
+android:text="Create Item"
+android:textAllCaps="false"
+android:textColor="#FFFFFF"
+    android:textSize="18sp"
+    app:icon="@drawable/ic_add_child"
+    app:iconTint="#FFFFFF"
+    app:backgroundTint="#FFA474"
+    app:cornerRadius="12dp"/>
 
-        </LinearLayout>
+    <!-- Loading Progress -->
+<com.google.android.material.progressindicator.CircularProgressIndicator
+android:id="@+id/progressBar"
+android:layout_width="48dp"
+android:layout_height="48dp"
+android:layout_gravity="center"
+android:layout_marginTop="16dp"
+android:indeterminate="true"
+android:visibility="gone"
+app:indicatorColor="#6EC6FF"
+    app:trackColor="#B0BEC5"/>
+    </LinearLayout>
     </ScrollView>
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>

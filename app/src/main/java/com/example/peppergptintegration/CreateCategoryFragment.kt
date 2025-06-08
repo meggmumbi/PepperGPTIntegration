@@ -47,7 +47,7 @@ class CreateCategoryFragment : Fragment() {
             return
         }
 
-        setupToolbar()
+//        setupToolbar()
         setupDifficultyDropdown()
         setupCreateButton()
 
@@ -55,11 +55,11 @@ class CreateCategoryFragment : Fragment() {
         (activity as? MainActivity)?.safeSay("You are creating a new therapy category. Please provide the name, description, and select difficulty level.")
     }
 
-    private fun setupToolbar() {
-        binding.toolbar.setNavigationOnClickListener {
-            findNavController().navigateUp()
-        }
-    }
+//    private fun setupToolbar() {
+//        binding.toolbar.setNavigationOnClickListener {
+//            findNavController().navigateUp()
+//        }
+//    }
 
     private fun setupDifficultyDropdown() {
         val adapter = ArrayAdapter(

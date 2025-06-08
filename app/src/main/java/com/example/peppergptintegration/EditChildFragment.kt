@@ -50,7 +50,7 @@ class EditChildFragment : Fragment() {
             return
         }
 
-        setupToolbar()
+//        setupToolbar()
         setupDatePicker()
         setupClickListeners()
         loadChildData()
@@ -59,11 +59,11 @@ class EditChildFragment : Fragment() {
         (activity as? MainActivity)?.safeSay("Editing child profile. You can update the details here.")
     }
 
-    private fun setupToolbar() {
-        binding.toolbar.setNavigationOnClickListener {
-            findNavController().navigateUp()
-        }
-    }
+//    private fun setupToolbar() {
+//        binding.toolbar.setNavigationOnClickListener {
+//            findNavController().navigateUp()
+//        }
+//    }
 
     private fun setupDatePicker() {
         binding.diagnosisDateEditText.setOnClickListener {

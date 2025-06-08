@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.button.MaterialButton
 
 class CategoriesAdapter(
     private var categories: List<Category>,
@@ -44,7 +45,8 @@ class CategoriesAdapter(
         private val nameTextView: TextView = itemView.findViewById(R.id.categoryNameTextView)
         private val descriptionTextView: TextView = itemView.findViewById(R.id.categoryDescriptionTextView)
         private val difficultyTextView: TextView = itemView.findViewById(R.id.categoryDifficultyTextView)
-        private val viewButton: ImageButton = itemView.findViewById(R.id.viewItemButton)
+        private val viewButton: MaterialButton = itemView.findViewById(R.id.viewItemButton)
+
 
         fun bind(category: Category) {
             nameTextView.text = category.name

@@ -48,20 +48,20 @@ class CreateItemFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupToolbar()
+//        setupToolbar()
         setupDifficultyDropdown()
         setupCreateButton()
     }
 
-    private fun setupToolbar() {
-        binding.toolbar.setNavigationOnClickListener {
-            if (!binding.createButton.isEnabled) {
-                showSnackbar("Please wait while we create your item")
-                return@setNavigationOnClickListener
-            }
-            findNavController().navigateUp()
-        }
-    }
+//    private fun setupToolbar() {
+//        binding.toolbar.setNavigationOnClickListener {
+//            if (!binding.createButton.isEnabled) {
+//                showSnackbar("Please wait while we create your item")
+//                return@setNavigationOnClickListener
+//            }
+//            findNavController().navigateUp()
+//        }
+//    }
 
     private fun setupDifficultyDropdown() {
         val adapter = ArrayAdapter(
@@ -191,7 +191,7 @@ class CreateItemFragment : Fragment() {
             binding.difficultyAutoCompleteTextView.isEnabled = false
             binding.generateImageCheckBox.isEnabled = false
             binding.createButton.isEnabled = false
-            binding.toolbar.navigationIcon = null
+//            binding.toolbar.navigationIcon = null
         }
     }
 
@@ -201,7 +201,7 @@ class CreateItemFragment : Fragment() {
             binding.difficultyAutoCompleteTextView.isEnabled = true
             binding.generateImageCheckBox.isEnabled = true
             binding.createButton.isEnabled = true
-            binding.toolbar.setNavigationIcon(R.drawable.ic_back)
+//            binding.toolbar.setNavigationIcon(R.drawable.ic_back)
         }
     }
 

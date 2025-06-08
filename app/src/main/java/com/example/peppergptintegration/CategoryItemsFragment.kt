@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.peppergptintegration.databinding.FragmentCategoryItemsBinding
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
@@ -44,7 +45,7 @@ class CategoryItemsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupToolbar()
+//        setupToolbar()
         setupRecyclerView()
         setupClickListeners()
         fetchCategoryItems()
@@ -57,11 +58,11 @@ class CategoryItemsFragment : Fragment() {
         (activity as? MainActivity)?.safeSay("Here are the items in this category. You can view each item by tapping the eye icon.")
     }
 
-    private fun setupToolbar() {
-        binding.toolbar.setNavigationOnClickListener {
-            findNavController().navigateUp()
-        }
-    }
+//    private fun setupToolbar() {
+//        binding.toolbar.setNavigationOnClickListener {
+//            findNavController().navigateUp()
+//        }
+//    }
 
     private fun setupRecyclerView() {
         itemsAdapter = CategoryItemsAdapter(
@@ -76,7 +77,7 @@ class CategoryItemsFragment : Fragment() {
         )
 
         binding.itemsRecyclerView.apply {
-            layoutManager = LinearLayoutManager(requireContext())
+            layoutManager = GridLayoutManager(requireContext(), 3)
             adapter = itemsAdapter
             setHasFixedSize(true)
         }

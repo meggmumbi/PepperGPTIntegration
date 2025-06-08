@@ -5,50 +5,82 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardBackgroundColor="@color/card_background"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
+    app:cardBackgroundColor="#FFFFFF"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:strokeColor="#D4BFFF"
+    app:strokeWidth="1dp">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+    <RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp">
 
+    <!-- Difficulty Badge (Top Right) -->
+        <TextView
+            android:id="@+id/categoryDifficultyTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:background="#FFE680"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp"
+            android:textColor="#37474F"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:cornerRadius="12dp"/>
+
+        <!-- Category Name -->
         <TextView
             android:id="@+id/categoryNameTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:textSize="18sp"
+            android:layout_toStartOf="@id/categoryDifficultyTextView"
+            android:textColor="#37474F"
+            android:textSize="20sp"
             android:textStyle="bold"/>
 
+        <!-- Category Description -->
         <TextView
             android:id="@+id/categoryDescriptionTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_below="@id/categoryNameTextView"
             android:layout_marginTop="8dp"
-            android:textColor="@color/white"
-            android:textSize="14sp"/>
+            android:textColor="#37474F"
+            android:textSize="15sp"
+            android:lineSpacingExtra="2dp"/>
 
-        <TextView
-            android:id="@+id/categoryDifficultyTextView"
+        <!-- View Button (Bottom Right) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/viewItemButton"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_alignParentEnd="true"
+            android:layout_below="@id/categoryDescriptionTextView"
+            android:layout_marginTop="12dp"
+            android:text="View"
+            android:textColor="#6EC6FF"
+            android:textSize="14sp"
+            app:icon="@drawable/ic_visibility"
+            app:iconTint="#6EC6FF"
+            app:iconSize="18dp"
+            app:cornerRadius="18dp"
+            app:strokeColor="#6EC6FF"
+            app:strokeWidth="1dp"/>
+
+        <!-- Progress Indicator (Optional) -->
+        <com.google.android.material.progressindicator.LinearProgressIndicator
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textColor="@color/white"
-            android:textSize="12sp"
-            android:textStyle="italic"/>
+            android:layout_height="4dp"
+            android:layout_below="@id/categoryDescriptionTextView"
+            android:layout_marginTop="16dp"
+            android:layout_toStartOf="@id/viewItemButton"
+            android:layout_marginEnd="8dp"
+            android:visibility="gone"
+            app:indicatorColor="#A6F6A1"
+            app:trackColor="#B0BEC5"/>
 
-    </LinearLayout>
-    <ImageButton
-        android:id="@+id/viewItemButton"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_gravity="center"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/ic_visibility"
-        app:tint="@color/white"
-        android:contentDescription="View item"/>
-
+    </RelativeLayout>
 </com.google.android.material.card.MaterialCardView>
