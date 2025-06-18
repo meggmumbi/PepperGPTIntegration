@@ -192,7 +192,7 @@ class CategoriesFragment : Fragment() {
             throw Exception("Not authenticated")
         }
 
-        val url = "${BuildConfig.BASE_URL}activities/categories/?page=$page"
+        val url = "${BuildConfig.BASE_URL}activities/$childId/categories-with-stats"
         Log.d("API", "Fetching categories from: $url")
 
         val request = Request.Builder()
@@ -231,7 +231,19 @@ class CategoriesFragment : Fragment() {
                     id = categoryJson.getString("id"),
                     name = categoryJson.getString("name"),
                     description = categoryJson.getString("description"),
-                    difficultyLevel = categoryJson.getString("difficulty_level")
+                    difficultyLevel = categoryJson.getString("difficulty_level"),
+                    itemCount = if (categoryJson.has("item_count") && !categoryJson.isNull("item_count")) {
+                        categoryJson.getInt("item_count")
+                    } else null,
+                    totalAttempts = if (categoryJson.has("total_attempts") && !categoryJson.isNull("total_attempts")) {
+                        categoryJson.getInt("total_attempts")
+                    } else null,
+                    latestPerformance = if (categoryJson.has("latest_performance") && !categoryJson.isNull("latest_performance")) {
+                        categoryJson.getDouble("latest_performance")
+                    } else null,
+                    lastAttemptDate = if (categoryJson.has("last_attempt_date") && !categoryJson.isNull("last_attempt_date")) {
+                        categoryJson.getString("last_attempt_date")
+                    } else null
                 )
             }
         } catch (e: Exception) {

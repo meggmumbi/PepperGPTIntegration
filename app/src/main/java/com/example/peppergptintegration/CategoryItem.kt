@@ -5,5 +5,6 @@ data class CategoryItem(
     val name: String,
     val categoryId: String,
     val difficultyLevel: String,
+    val description: String,
     val imageBase64: String?
 )

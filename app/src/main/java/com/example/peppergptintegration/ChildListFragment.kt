@@ -30,6 +30,7 @@ class ChildListFragment : Fragment() {
     private lateinit var childAdapter: ChildAdapter
     private val client = OkHttpClient()
 
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -165,12 +166,31 @@ class ChildListFragment : Fragment() {
             val jsonArray = JSONArray(jsonString)
             List(jsonArray.length()) { i ->
                 val childJson = jsonArray.getJSONObject(i)
+
+                // Parse areas of interest
+                val areasOfInterestJson = childJson.optJSONArray("areas_of_interest")
+                val areasOfInterest = if (areasOfInterestJson != null) {
+                    List(areasOfInterestJson.length()) { j ->
+                        val areaJson = areasOfInterestJson.getJSONObject(j)
+                        CategoryAreas(
+                            id = areaJson.getString("id"),
+                            name = areaJson.getString("name"),
+                            difficultyLevel = "",
+
+                        )
+                    }
+                } else {
+                    emptyList()
+                }
+
                 Child(
                     id = childJson.getString("id"),
                     name = childJson.getString("name"),
                     age = childJson.getInt("age"),
                     diagnosisDate = childJson.getString("diagnosis_date"),
-                    notes = childJson.getString("notes"),
+                    notes = childJson.optString("notes", ""),
+                    therapyGoals = childJson.optString("therapy_goals", ""),
+                    areasOfInterest = areasOfInterest,
                     createdAt = childJson.getString("created_at")
                 )
             }

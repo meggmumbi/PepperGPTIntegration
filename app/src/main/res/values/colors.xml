@@ -69,4 +69,9 @@
     <color name="asd_neutral_text">#FFA000</color> <!-- Warm amber (not alarming red) -->
     <color name="asd_primary_text">#424242</color> <!-- High-contrast but not stark black -->
     <color name="asd_success_icon">#4CAF50</color> <!-- Muted success color -->
+
+    <color name="difficulty_easy">#A6F6A1</color>
+    <color name="difficulty_medium">#FFE680</color>
+    <color name="difficulty_advanced">#FF6B6B</color>
+    <color name="difficulty_default">#B0BEC5</color>
 </resources>

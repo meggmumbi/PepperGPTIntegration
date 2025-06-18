@@ -88,13 +88,13 @@
         android:layout_marginTop="16dp"
         android:hint="Description"
         app:boxStrokeColor="#6EC6FF"
-    app:hintTextColor="#B0BEC5"
+        app:hintTextColor="#B0BEC5"
         app:boxCornerRadiusTopStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"
         app:boxCornerRadiusBottomStart="12dp"
         app:boxCornerRadiusBottomEnd="12dp"
-    app:endIconMode="clear_text"
-    app:endIconTint="#6EC6FF">
+        app:endIconMode="clear_text"
+        app:endIconTint="#6EC6FF">
 
     <com.google.android.material.textfield.TextInputEditText
         android:id="@+id/descriptionEditText"
@@ -103,33 +103,33 @@
         android:gravity="top"
         android:inputType="textMultiLine"
         android:textColor="#37474F"
-    android:textColorHint="#B0BEC5"/>
+        android:textColorHint="#B0BEC5"/>
 </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Image Generation Card -->
-<com.google.android.material.card.MaterialCardView
-android:layout_width="match_parent"
-android:layout_height="wrap_content"
-android:layout_marginTop="16dp"
-android:layout_marginBottom="24dp"
-app:cardBackgroundColor="#FFFFFF"
-    app:cardCornerRadius="12dp"
-    app:strokeColor="#D4BFFF"
-    app:strokeWidth="1dp">
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="24dp"
+        app:cardBackgroundColor="#FFFFFF"
+        app:cardCornerRadius="12dp"
+        app:strokeColor="#D4BFFF"
+        app:strokeWidth="1dp">
 
-<LinearLayout
-android:layout_width="match_parent"
-android:layout_height="wrap_content"
-android:orientation="vertical"
-android:padding="16dp">
-
-<TextView
+    <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:text="Image Options"
-    android:textColor="#37474F"
-android:textSize="16sp"
-android:textStyle="bold"/>
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Image Options"
+        android:textColor="#37474F"
+        android:textSize="16sp"
+        android:textStyle="bold"/>
 
 <com.google.android.material.checkbox.MaterialCheckBox
     android:id="@+id/generateImageCheckBox"

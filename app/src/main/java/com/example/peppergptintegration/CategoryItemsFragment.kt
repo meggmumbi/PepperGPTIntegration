@@ -197,6 +197,7 @@ class CategoryItemsFragment : Fragment() {
                 name = itemJson.getString("name"),
                 categoryId = itemJson.getString("category_id"),
                 difficultyLevel = itemJson.getString("difficulty_level"),
+                description = itemJson.getString("description"),
                 imageBase64 = itemJson.optString("image_url", null)
             )
         }

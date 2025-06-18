@@ -100,12 +100,20 @@ class CreateItemFragment : Fragment() {
             binding.difficultyInputLayout.error = null
         }
 
+        if (binding.descriptionEditText.text.isNullOrBlank()) {
+            binding.descriptionInputLayout.error = "Item name is required"
+            isValid = false
+        } else {
+            binding.descriptionInputLayout.error = null
+        }
+
         return isValid
     }
 
     private fun createItem() {
         val name = binding.nameEditText.text.toString().trim()
         val difficultyLevel = binding.difficultyAutoCompleteTextView.text.toString().trim().lowercase()
+        val description = binding.descriptionEditText.text.toString().trim()
         val generateImage = binding.generateImageCheckBox.isChecked
 
         disableUI()
@@ -114,7 +122,7 @@ class CreateItemFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val response = withContext(Dispatchers.IO) {
-                    createItemOnApi(name, difficultyLevel, generateImage)
+                    createItemOnApi(name, difficultyLevel,description, generateImage)
                 }
 
                 if (response.isSuccessful) {
@@ -135,6 +143,7 @@ class CreateItemFragment : Fragment() {
     private suspend fun createItemOnApi(
         name: String,
         difficultyLevel: String,
+        description: String,
         generateImage: Boolean
     ): Response {
         val token = getAuthToken() ?: throw Exception("Not authenticated")
@@ -143,6 +152,7 @@ class CreateItemFragment : Fragment() {
             put("name", name)
             put("category_id", args.categoryId)
             put("difficulty_level", difficultyLevel)
+            put("description", description)
             put("generate_image", generateImage)
         }
 
@@ -190,6 +200,7 @@ class CreateItemFragment : Fragment() {
             binding.nameEditText.isEnabled = false
             binding.difficultyAutoCompleteTextView.isEnabled = false
             binding.generateImageCheckBox.isEnabled = false
+            binding.descriptionEditText.isEnabled = false
             binding.createButton.isEnabled = false
 //            binding.toolbar.navigationIcon = null
         }
@@ -199,6 +210,7 @@ class CreateItemFragment : Fragment() {
         activity?.runOnUiThread {
             binding.nameEditText.isEnabled = true
             binding.difficultyAutoCompleteTextView.isEnabled = true
+            binding.descriptionEditText.isEnabled = true
             binding.generateImageCheckBox.isEnabled = true
             binding.createButton.isEnabled = true
 //            binding.toolbar.setNavigationIcon(R.drawable.ic_back)

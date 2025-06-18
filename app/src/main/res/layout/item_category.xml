@@ -2,85 +2,183 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardBackgroundColor="#FFFFFF"
+    app:cardBackgroundColor="@android:color/white"
     app:cardCornerRadius="12dp"
-    app:cardElevation="2dp"
-    app:strokeColor="#D4BFFF"
-    app:strokeWidth="1dp">
+    app:cardElevation="1dp"
+    app:strokeColor="#E0E0E0"
+    app:strokeWidth="0.5dp">
 
-    <RelativeLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:padding="16dp">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <!-- Difficulty Badge (Top Right) -->
-        <TextView
-            android:id="@+id/categoryDifficultyTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:background="#FFE680"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="4dp"
-            android:textColor="#37474F"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            app:cornerRadius="12dp"/>
-
-        <!-- Category Name -->
-        <TextView
-            android:id="@+id/categoryNameTextView"
+        <!-- Header Row -->
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_toStartOf="@id/categoryDifficultyTextView"
-            android:textColor="#37474F"
-            android:textSize="20sp"
-            android:textStyle="bold"/>
+            android:layout_height="wrap_content">
+
+            <!-- Category Name -->
+            <TextView
+                android:id="@+id/categoryNameTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@id/categoryDifficultyTextView"
+                android:textColor="#263238"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end"/>
+
+            <!-- Difficulty Badge -->
+            <com.google.android.material.chip.Chip
+                android:id="@+id/categoryDifficultyTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:textColor="@android:color/white"
+                app:chipCornerRadius="16dp"/>
+        </RelativeLayout>
 
         <!-- Category Description -->
         <TextView
             android:id="@+id/categoryDescriptionTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/categoryNameTextView"
             android:layout_marginTop="8dp"
-            android:textColor="#37474F"
-            android:textSize="15sp"
-            android:lineSpacingExtra="2dp"/>
-
-        <!-- View Button (Bottom Right) -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/viewItemButton"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="wrap_content"
-            android:layout_height="36dp"
-            android:layout_alignParentEnd="true"
-            android:layout_below="@id/categoryDescriptionTextView"
-            android:layout_marginTop="12dp"
-            android:text="View"
-            android:textColor="#6EC6FF"
+            android:textColor="#546E7A"
             android:textSize="14sp"
-            app:icon="@drawable/ic_visibility"
-            app:iconTint="#6EC6FF"
-            app:iconSize="18dp"
-            app:cornerRadius="18dp"
-            app:strokeColor="#6EC6FF"
-            app:strokeWidth="1dp"/>
+            android:lineSpacingExtra="4dp"
+            android:maxLines="2"
+            android:ellipsize="end"/>
 
-        <!-- Progress Indicator (Optional) -->
+        <!-- Stats Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:divider="@drawable/divider_vertical"
+            android:showDividers="middle"
+            android:dividerPadding="8dp">
+
+            <!-- Items Count -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginEnd="4dp"
+                    android:src="@drawable/ic_items"
+                    app:tint="#78909C"/>
+
+                <TextView
+                    android:id="@+id/itemCountTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#78909C"
+                    android:textSize="12sp"
+                    tools:text="12 items"/>
+            </LinearLayout>
+
+            <!-- Attempts Count -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginEnd="4dp"
+                    android:src="@drawable/ic_attempts"
+                    app:tint="#78909C"/>
+
+                <TextView
+                    android:id="@+id/attemptsTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#78909C"
+                    android:textSize="12sp"
+                    tools:text="5 attempts"/>
+            </LinearLayout>
+
+            <!-- Performance -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginEnd="4dp"
+                    android:src="@drawable/ic_performance"
+                    app:tint="#78909C"/>
+
+                <TextView
+                    android:id="@+id/performanceTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#78909C"
+                    android:textSize="12sp"
+                    tools:text="85%"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Progress Bar -->
         <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/progressIndicator"
             android:layout_width="match_parent"
             android:layout_height="4dp"
-            android:layout_below="@id/categoryDescriptionTextView"
-            android:layout_marginTop="16dp"
-            android:layout_toStartOf="@id/viewItemButton"
-            android:layout_marginEnd="8dp"
-            android:visibility="gone"
-            app:indicatorColor="#A6F6A1"
-            app:trackColor="#B0BEC5"/>
+            android:layout_marginTop="12dp"
+            app:indicatorColor="#4CAF50"
+            app:trackColor="#E0E0E0"
+            app:trackCornerRadius="2dp"/>
 
-    </RelativeLayout>
+        <!-- Last Attempt & Button Row -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp">
+
+            <!-- Last Attempt Date -->
+            <TextView
+                android:id="@+id/lastAttemptTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#B0BEC5"
+                android:textSize="12sp"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                tools:text="Last attempt: 2 days ago"/>
+
+            <!-- View Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/viewItemButton"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_alignParentEnd="true"
+                android:text="View"
+                android:textColor="#2196F3"
+                android:textSize="14sp"
+                app:icon="@drawable/ic_arrow_right"
+                app:iconTint="#2196F3"
+                app:iconSize="18dp"
+                app:iconGravity="end"/>
+        </RelativeLayout>
+    </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

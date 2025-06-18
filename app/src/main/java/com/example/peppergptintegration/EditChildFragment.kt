@@ -22,6 +22,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import org.json.JSONArray
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -31,6 +32,9 @@ class EditChildFragment : Fragment() {
     private val client = OkHttpClient()
     private val JSON = "application/json".toMediaType()
     private lateinit var childId: String
+    private var categories = listOf<CategoryAreas>()
+    private var selectedCategoryIds = mutableListOf<String>()
+    private var allCategories = listOf<CategoryAreas>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,20 +54,15 @@ class EditChildFragment : Fragment() {
             return
         }
 
-//        setupToolbar()
+
         setupDatePicker()
         setupClickListeners()
+        fetchCategories()
         loadChildData()
 
         // Make Pepper announce the screen
         (activity as? MainActivity)?.safeSay("Editing child profile. You can update the details here.")
     }
-
-//    private fun setupToolbar() {
-//        binding.toolbar.setNavigationOnClickListener {
-//            findNavController().navigateUp()
-//        }
-//    }
 
     private fun setupDatePicker() {
         binding.diagnosisDateEditText.setOnClickListener {
@@ -105,6 +104,82 @@ class EditChildFragment : Fragment() {
         binding.deleteButton.setOnClickListener {
             showDeleteConfirmationDialog()
         }
+
+        binding.interestsDropdown.setOnClickListener {
+            showMultiSelectDialog()
+        }
+    }
+
+    private fun fetchCategories() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val token = getAuthToken() ?: throw Exception("Not authenticated")
+                val url = "${BuildConfig.BASE_URL}activities/categories/"
+
+                val request = Request.Builder()
+                    .url(url)
+                    .addHeader("Authorization", "Bearer $token")
+                    .addHeader("accept", "application/json")
+                    .build()
+
+                val response = client.newCall(request).execute()
+
+                if (response.isSuccessful) {
+                    val responseBody = response.body?.string()
+                    val jsonArray = JSONArray(responseBody)
+
+                    allCategories = (0 until jsonArray.length()).map { i ->
+                        val category = jsonArray.getJSONObject(i)
+                        CategoryAreas(
+                            id = category.getString("id"),
+                            name = category.getString("name"),
+                            difficultyLevel = category.getString("difficulty_level"),
+
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("EditChild", "Error fetching categories", e)
+            }
+        }
+    }
+
+    private fun updateInterestsDropdown() {
+        if (selectedCategoryIds.isEmpty()) {
+            binding.interestsDropdown.setText("Select areas of interest")
+        } else {
+            val selectedNames = allCategories
+                .filter { selectedCategoryIds.contains(it.id) }
+                .joinToString(", ") { it.name }
+            binding.interestsDropdown.setText(selectedNames)
+        }
+    }
+
+    private fun showMultiSelectDialog() {
+        val items = allCategories.map {
+            "${it.name} (${it.difficultyLevel})"
+        }.toTypedArray()
+
+        val checkedItems = allCategories.map {
+            selectedCategoryIds.contains(it.id)
+        }.toBooleanArray()
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Select Areas of Interest")
+            .setMultiChoiceItems(items, checkedItems) { dialog, which, isChecked ->
+                val category = allCategories[which]
+                if (isChecked) {
+                    selectedCategoryIds.add(category.id)
+                } else {
+                    selectedCategoryIds.remove(category.id)
+                }
+                updateInterestsDropdown()
+            }
+            .setPositiveButton("OK") { dialog, which ->
+                updateInterestsDropdown()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun loadChildData() {
@@ -149,13 +224,26 @@ class EditChildFragment : Fragment() {
 
     private fun parseChild(jsonString: String): Child {
         val json = JSONObject(jsonString)
+        val areasOfInterestJson = json.getJSONArray("areas_of_interest")
+        val areasOfInterest = (0 until areasOfInterestJson.length()).map { i ->
+            val area = areasOfInterestJson.getJSONObject(i)
+            CategoryAreas(
+                id = area.getString("id"),
+                name = area.getString("name"),
+                difficultyLevel = "",
+
+            )
+        }
+
         return Child(
             id = json.getString("id"),
             name = json.getString("name"),
             age = json.getInt("age"),
             diagnosisDate = json.getString("diagnosis_date"),
             notes = json.getString("notes"),
-            createdAt = json.optString("created_at", "")
+            therapyGoals = json.optString("therapy_goals", ""),
+            areasOfInterest = areasOfInterest,
+            createdAt = json.getString("created_at")
         )
     }
 
@@ -164,6 +252,11 @@ class EditChildFragment : Fragment() {
         binding.ageEditText.setText(child.age.toString())
         binding.diagnosisDateEditText.setText(child.diagnosisDate)
         binding.notesEditText.setText(child.notes)
+        binding.goalsEditText.setText(child.therapyGoals)
+
+        selectedCategoryIds.clear()
+        selectedCategoryIds.addAll(child.areasOfInterest.map { it.id })
+        updateInterestsDropdown()
     }
 
     private fun validateInputs(): Boolean {
@@ -188,6 +281,13 @@ class EditChildFragment : Fragment() {
             isValid = false
         } else {
             binding.diagnosisDateInputLayout.error = null
+        }
+
+        if (binding.goalsEditText.text.isNullOrEmpty()) {
+            binding.goalsInputLayout.error = "Therapy goals are required"
+            isValid = false
+        } else {
+            binding.goalsInputLayout.error = null
         }
 
         return isValid
@@ -223,6 +323,8 @@ class EditChildFragment : Fragment() {
             put("age", binding.ageEditText.text.toString().toInt())
             put("diagnosis_date", binding.diagnosisDateEditText.text.toString())
             put("notes", binding.notesEditText.text.toString())
+            put("therapy_goals", binding.goalsEditText.text.toString())
+            put("areas_of_interest_ids", JSONArray(selectedCategoryIds))
         }
 
         val request = Request.Builder()
@@ -320,13 +422,4 @@ class EditChildFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
-
-    data class Child(
-        val id: String,
-        val name: String,
-        val age: Int,
-        val diagnosisDate: String,
-        val notes: String,
-        val createdAt: String
-    )
 }
