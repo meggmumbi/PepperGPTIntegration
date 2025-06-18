@@ -102,7 +102,7 @@ class ActivitiesFragment : Fragment() {
 
         requestAudioPermissions()
         setupAudioRecording()
-        setupToolbar()
+//        setupToolbar()
         setupClickListeners()
         setupResponseTypeToggle()
         startTherapySession()
@@ -162,6 +162,7 @@ class ActivitiesFragment : Fragment() {
 
             isRecording = true
             binding.recordButton.text = "Stop Recording"
+
 
         } catch (e: Exception) {
             Log.e("AudioRecording", "Failed to start recording", e)
@@ -287,12 +288,12 @@ class ActivitiesFragment : Fragment() {
             null
         }
     }
-    private fun setupToolbar() {
-        binding.toolbar.setNavigationOnClickListener {
-            showEndSessionConfirmation()
-        }
-        setHasOptionsMenu(true)
-    }
+//    private fun setupToolbar() {
+//        binding.toolbar.setNavigationOnClickListener {
+//            showEndSessionConfirmation()
+//        }
+//        setHasOptionsMenu(true)
+//    }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.activity_menu, menu)
@@ -466,21 +467,6 @@ class ActivitiesFragment : Fragment() {
     }
 
     private fun setupClickListeners() {
-        binding.correctButton.setOnClickListener {
-            if (!isProcessingResponse) {
-                currentItem?.let { item ->
-                    recordResponse(item.id, isCorrect = true)
-                }
-            }
-        }
-
-        binding.incorrectButton.setOnClickListener {
-            if (!isProcessingResponse) {
-                currentItem?.let { item ->
-                    recordResponse(item.id, isCorrect = false)
-                }
-            }
-        }
         binding.nonverbalOptionsGroup.setOnCheckedChangeListener { group, checkedId ->
             if (isProcessingResponse || checkedId == View.NO_ID) return@setOnCheckedChangeListener
 
@@ -706,7 +692,7 @@ class ActivitiesFragment : Fragment() {
         selectedOption: String? = null
     ) {
         disableAllResponseOptions()
-        binding.progressIndicator.visibility = View.VISIBLE
+//        binding.progressIndicator.visibility = View.VISIBLE
 
         val responseTimeSeconds = (System.currentTimeMillis() - responseStartTime) / 1000
 
@@ -744,7 +730,7 @@ class ActivitiesFragment : Fragment() {
     private fun resetResponseState() {
         retryAttempts = 0
         lastSelectedOption = null
-        binding.progressIndicator.visibility = View.GONE
+//        binding.progressIndicator.visibility = View.GONE
         binding.nonverbalOptionsGroup.clearCheck()
         enableAllResponseOptions()
         isProcessingResponse = false
@@ -783,14 +769,10 @@ class ActivitiesFragment : Fragment() {
 
 
     private fun disableAllResponseOptions() {
-        binding.correctButton.isEnabled = false
-        binding.incorrectButton.isEnabled = false
         binding.nonverbalOptionsGroup.isEnabled = false
     }
 
     private fun enableAllResponseOptions() {
-        binding.correctButton.isEnabled = true
-        binding.incorrectButton.isEnabled = true
         binding.nonverbalOptionsGroup.isEnabled = true
     }
 
@@ -838,7 +820,7 @@ class ActivitiesFragment : Fragment() {
     private fun updateTimerText() {
         val minutes = elapsedSeconds / 60
         val seconds = elapsedSeconds % 60
-        binding.sessionTimeText.text = String.format("%02d:%02d", minutes, seconds)
+//        binding.sessionTimeText.text = String.format("%02d:%02d", minutes, seconds)
     }
 
     private fun showLoadingState() {

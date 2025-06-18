@@ -5,23 +5,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/surfaceVariant">
+    android:background="#FFFFFF">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/surfaceVariant">
-
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:title="Therapy Session"
-            app:navigationIcon="@drawable/ic_back"
-            app:menu="@menu/activity_menu"
-            app:titleTextColor="@color/onSurface"/>
-
-    </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -61,293 +46,210 @@
             <LinearLayout
                 android:id="@+id/contentStateView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:orientation="horizontal"
                 android:padding="16dp"
-                android:visibility="gone">
+                android:weightSum="2"
+                android:background="#F5F5F5">
 
                 <!-- Left Column - Item Display -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1.5"
-                    android:orientation="vertical">
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/itemCard"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
-                        app:cardElevation="4dp"
-                        app:cardCornerRadius="12dp"
-                        app:strokeColor="@color/outline"
-                        app:strokeWidth="1dp">
-
-                        <RelativeLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:padding="16dp">
-
-                            <ImageView
-                                android:id="@+id/itemImageView"
-                                android:layout_width="20dp"
-                                android:layout_height="20dp"
-                                android:layout_weight="1"
-                                android:scaleType="centerCrop"
-                                android:adjustViewBounds="true"
-                                android:contentDescription="Therapy item"
-                                android:background="@color/surfaceContainerHigh"/>
-
-                            <com.google.android.material.textview.MaterialTextView
-                                android:id="@+id/itemNameTextView"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_below="@id/itemImageView"
-                                android:layout_marginTop="16dp"
-                                android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
-                                android:textColor="@color/onSurface"/>
-
-                            <com.google.android.material.chip.Chip
-                                android:id="@+id/difficultyChip"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_below="@id/itemNameTextView"
-                                android:layout_marginTop="8dp"
-                                app:chipBackgroundColor="@color/surfaceContainerHighest"
-                                app:chipStrokeColor="@color/outline"
-                                app:chipStrokeWidth="1dp"/>
-                        </RelativeLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Response Type Selection -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        app:cardBackgroundColor="@color/surfaceContainerLow">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="16dp">
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="Response Type"
-                                android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
-                                android:textColor="@color/onSurface"/>
-
-                            <com.google.android.material.button.MaterialButtonToggleGroup
-                                android:id="@+id/responseTypeToggleGroup"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                app:checkedButton="@id/verbalButton"
-                                app:singleSelection="true">
-
-                                <com.google.android.material.button.MaterialButton
-                                    android:id="@+id/verbalButton"
-                                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:text="Verbal"
-                                    app:icon="@drawable/ic_mic"
-                                    app:iconTint="@color/primary"/>
-
-                                <com.google.android.material.button.MaterialButton
-                                    android:id="@+id/nonverbalButton"
-                                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:layout_marginStart="8dp"
-                                    android:text="Nonverbal"
-                                    app:icon="@drawable/ic_touch"
-                                    app:iconTint="@color/primary"/>
-                            </com.google.android.material.button.MaterialButtonToggleGroup>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Verbal Response Options -->
-                    <LinearLayout
-                        android:id="@+id/verbalResponseContainer"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:orientation="vertical"
-                        android:visibility="visible">
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="Verbal Response"
-                            android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
-                            android:textColor="@color/onSurface"/>
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:orientation="horizontal">
-
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/correctButton"
-                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="Correct"
-                                android:textColor="@color/success"
-                                app:icon="@drawable/ic_check_circle"
-                                app:iconTint="@color/success"
-                                app:strokeColor="@color/success"/>
-
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/incorrectButton"
-                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:layout_marginStart="8dp"
-                                android:text="Incorrect"
-                                android:textColor="@color/error"
-                                app:icon="@drawable/ic_cancel"
-                                app:iconTint="@color/error"
-                                app:strokeColor="@color/error"/>
-
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/recordButton"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Record Response"
-                                app:icon="@drawable/ic_mic"
-                                app:iconGravity="start"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toBottomOf="@+id/itemImageView" />
-
-
-                        </LinearLayout>
-                        <ProgressBar
-                            android:id="@+id/verbalResponseIndicator"
-                            style="?android:attr/progressBarStyleSmall"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:visibility="gone"/>
-
-                        <TextView
-                            android:id="@+id/verbalResponseText"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Tap to respond verbally"
-                            android:layout_marginStart="8dp"/>
-                    </LinearLayout>
-
-                    <!-- Nonverbal Response Options -->
-                    <LinearLayout
-                        android:id="@+id/nonverbalResponseContainer"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:orientation="vertical"
-                        android:visibility="gone">
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="Nonverbal Response"
-                            android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
-                            android:textColor="@color/onSurface"/>
-
-                        <com.google.android.material.progressindicator.LinearProgressIndicator
-                            android:id="@+id/nonverbalProgressIndicator"
-                            android:layout_width="match_parent"
-                            android:layout_height="4dp"
-                            android:visibility="gone"
-                            app:indicatorColor="@color/primary"/>
-
-                        <com.google.android.material.chip.ChipGroup
-                            android:id="@+id/nonverbalOptionsGroup"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            app:singleSelection="true"/>
-                    </LinearLayout>
-                </LinearLayout>
-
-                <!-- Right Column - Session Info -->
-                <LinearLayout
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:layout_marginStart="16dp">
+                    android:layout_marginEnd="8dp"
+                    app:cardBackgroundColor="#FFE0B2"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="4dp">
 
-                    <!-- Progress Indicator -->
-                    <com.google.android.material.progressindicator.LinearProgressIndicator
-                        android:id="@+id/progressIndicator"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="4dp"
-                        android:visibility="gone"
-                        app:indicatorColor="@color/primary"/>
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="24dp">
 
-                    <!-- Session Info Card -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        app:cardBackgroundColor="@color/surfaceContainerLow">
+                        <!-- Difficulty Level Indicator -->
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/difficultyChip"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="16dp"
+                            app:chipBackgroundColor="#FFFFFF"
+                            app:chipCornerRadius="16dp"
+                            app:chipStrokeColor="#FFA474"
+                            app:chipStrokeWidth="1dp"/>
 
-                        <LinearLayout
+                        <!-- Item Image -->
+                        <FrameLayout
+                            android:layout_width="300dp"
+                            android:layout_height="300dp"
+                            android:layout_marginBottom="16dp"
+                            android:elevation="4dp">
+
+                            <ImageView
+                                android:id="@+id/itemImageView"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:scaleType="centerInside"
+                                android:contentDescription="Therapy item"
+                                android:padding="24dp"/>
+                        </FrameLayout>
+
+                        <!-- Item Name -->
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/itemNameTextView"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
+                            android:textColor="#5D4037"
+                            android:textSize="24sp"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Right Column - Response Options -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="4dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:padding="24dp">
+
+                        <!-- Response Type Selector -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Choose how to respond"
+                            android:textColor="#1976D2"
+                            android:textSize="20sp"
+
+                            android:layout_marginBottom="16dp"/>
+
+                        <com.google.android.material.button.MaterialButtonToggleGroup
+                            android:id="@+id/responseTypeToggleGroup"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="24dp"
+                            app:checkedButton="@id/verbalButton"
+                            app:singleSelection="true">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/verbalButton"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                android:layout_width="0dp"
+                                android:layout_height="60dp"
+                                android:layout_weight="1"
+                                android:text="Speak"
+                                android:textColor="#FF9800"
+                                app:icon="@drawable/ic_mic"
+                                app:iconTint="#FF9800"
+                                app:strokeColor="#FF9800"
+                                app:strokeWidth="1dp"
+                                app:cornerRadius="12dp"/>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/nonverbalButton"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                android:layout_width="0dp"
+                                android:layout_height="60dp"
+                                android:layout_weight="1"
+                                android:text="Touch"
+                                android:textColor="#4CAF50"
+                                app:icon="@drawable/ic_touch"
+                                app:iconTint="#4CAF50"
+                                app:strokeColor="#4CAF50"
+                                app:strokeWidth="1dp"
+                                app:cornerRadius="12dp"/>
+                        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                        <!-- Verbal Response Section -->
+                        <LinearLayout
+                            android:id="@+id/verbalResponseContainer"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
                             android:orientation="vertical"
-                            android:padding="16dp">
+                            android:gravity="center">
 
-                            <com.google.android.material.textview.MaterialTextView
-                                android:layout_width="match_parent"
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/recordButton"
+                                android:layout_width="180dp"
+                                android:layout_height="180dp"
+                                android:text="Tap to Record"
+                                android:textColor="#FFFFFF"
+                                app:icon="@drawable/ic_mic"
+                                app:iconSize="48dp"
+                                app:iconTint="#FFFFFF"
+                                app:backgroundTint="#FF9800"
+                                app:cornerRadius="90dp"
+                                android:elevation="4dp"/>
+
+                            <TextView
+                                android:id="@+id/verbalResponseText"
+                                android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Session Progress"
-                                android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
-                                android:textColor="@color/onSurface"/>
+                                android:layout_marginTop="16dp"
+                                android:text="Press the button to speak"
+                                android:textColor="#757575"/>
+                        </LinearLayout>
 
-                            <LinearLayout
-                                android:layout_width="match_parent"
+                        <!-- Nonverbal Response Section -->
+                        <LinearLayout
+                            android:id="@+id/nonverbalResponseContainer"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:visibility="gone">
+
+                            <TextView
+                                android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                android:orientation="horizontal">
+                                android:text="Select your answer"
+                                android:textColor="#1976D2"
+                                android:textSize="18sp"
+                                android:layout_marginBottom="16dp"
+                                android:layout_gravity="center"/>
 
-                                <com.google.android.material.textview.MaterialTextView
-                                    android:id="@+id/progressText"
-                                    android:layout_width="0dp"
-                                    android:layout_weight="1"
-                                    android:layout_height="wrap_content"
-                                    android:text="0/10 items completed"
-                                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
-                                    android:textColor="@color/onSurfaceVariant"/>
+                            <com.google.android.material.progressindicator.LinearProgressIndicator
+                                android:id="@+id/nonverbalProgressIndicator"
+                                android:layout_width="200dp"
+                                android:layout_height="4dp"
+                                android:layout_gravity="center"
+                                android:visibility="gone"
+                                app:indicatorColor="#4CAF50"/>
 
-                                <com.google.android.material.textview.MaterialTextView
-                                    android:id="@+id/sessionTimeText"
+                            <HorizontalScrollView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:scrollbars="none">
+
+                                <com.google.android.material.chip.ChipGroup
+                                    android:id="@+id/nonverbalOptionsGroup"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="00:00"
-                                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
-                                    android:textColor="@color/onSurfaceVariant"/>
-                            </LinearLayout>
+                                    android:layout_gravity="center"
+                                    app:singleSelection="true"
+                                    app:chipSpacing="12dp">
+                                </com.google.android.material.chip.ChipGroup>
+                            </HorizontalScrollView>
                         </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Additional space can be used for more session info if needed -->
-                    <Space
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"/>
-                </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
+
+
 
             <!-- Empty State -->
             <LinearLayout
