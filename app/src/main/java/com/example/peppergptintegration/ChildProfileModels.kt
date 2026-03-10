@@ -94,3 +94,10 @@ data class TrendData(
         val improvementRate: Double
     )
 }
+
+data class AIRecommendation(
+    val child_id: String,
+    val child_name: String,
+    val recommendations: String,
+    val timestamp: String
+)

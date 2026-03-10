@@ -8,18 +8,15 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object DatePickerUtils {
+
     fun showMaterialDatePicker(
         fragment: Fragment,
         title: String,
         initialDate: Long? = null,
         onDateSelected: (Long) -> Unit
     ) {
-        val constraintsBuilder = CalendarConstraints.Builder()
-            .setValidator(DateValidatorPointForward.now()) // Only allow future dates if needed
-
         val datePicker = MaterialDatePicker.Builder.datePicker()
             .setTitleText(title)
-            .setCalendarConstraints(constraintsBuilder.build())
             .apply {
                 initialDate?.let { setSelection(it) }
             }

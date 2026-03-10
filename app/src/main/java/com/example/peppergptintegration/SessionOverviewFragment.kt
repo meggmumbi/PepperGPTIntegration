@@ -5,6 +5,8 @@ import android.app.Dialog
 import android.content.Context
 import android.content.res.ColorStateList
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.*
 import android.widget.Toast
@@ -32,6 +34,14 @@ import kotlin.math.roundToInt
 
 
 class SessionOverviewFragment : Fragment() {
+    companion object {
+        private const val MAX_RETRY_ATTEMPTS = 1
+        private const val AUDIO_PERMISSION_REQUEST_CODE = 101
+        private const val CONNECTION_TIMEOUT = 30L
+        private const val CORRECT_ANIMATION_DURATION = 2160L
+        private const val INCORRECT_ANIMATION_DURATION = 1440L
+        private const val ATTENTION_UPDATE_INTERVAL = 2000L
+    }
     private var _binding: FragmentSessionOverviewBinding? = null
     private val binding get() = _binding!!
     private val args: SessionOverviewFragmentArgs by navArgs()
@@ -102,14 +112,47 @@ class SessionOverviewFragment : Fragment() {
         // Recommendations
         binding.recommendationsText.text = overview.recommendations.joinToString("\n\n")
 
-        // Announce completion
-        (activity as? MainActivity)?.safeSay(
+        Handler(Looper.getMainLooper()).postDelayed({
+            performResultsAnnouncement(overview)
+        }, 1000)
+
+    }
+
+    private fun performResultsAnnouncement(overview: SessionOverview) {
+        val mainActivity = activity as? MainActivity ?: return
+
+        // Start drum roll animation
+        mainActivity.runPepperAnimation(
+            R.raw.drumroll_b001, // You'll need to add this animation resource
+            9000 // 9 seconds as specified
+        ) {
+            Log.d("Overview", "Drum roll animation completed")
+        }
+
+        // Use safeSay with the drum roll text (this will speak while animating)
+        // The animation will continue for the full 9 seconds while speech plays
+        mainActivity.safeSay(
+            "Drum roll please..."
+        )
+
+        // Schedule the results announcement after the drum roll
+        Handler(Looper.getMainLooper()).postDelayed({
+            announceResults(overview)
+        }, 9000) // 9 seconds delay
+    }
+
+    private fun announceResults(overview: SessionOverview) {
+        val mainActivity = activity as? MainActivity ?: return
+
+        // Announce the results (this will interrupt any ongoing animation/speech)
+        mainActivity.safeSay(
             "Great job! You completed ${overview.categoryName} practice with " +
                     "${overview.correctAnswers} out of ${overview.totalActivities} correct. " +
                     "Your accuracy was ${overview.accuracyPercentage.roundToInt()} percent. " +
                     overview.recommendations.joinToString()
         )
     }
+
 
     private fun setupClickListeners() {
 

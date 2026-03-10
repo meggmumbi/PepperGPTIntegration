@@ -39,19 +39,13 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Auto-fill credentials if coming from registration
-        args.username.takeIf { it.isNotEmpty() }?.let { username ->
-            binding.usernameEditText.setText(username)
-            args.password.takeIf { it.isNotEmpty() }?.let { password ->
-                binding.passwordEditText.setText(password)
-                // Make Pepper announce auto-login attempt
-                (activity as? MainActivity)?.safeSay("Welcome $username! Attempting to log you in.")
-                attemptLogin(username, password)
-            }
+        if (args.username.isNotEmpty()) {
+            binding.usernameEditText.setText(args.username)
         }
 
         setupUi()
     }
+
 
     private fun setupUi() {
         binding.loginButton.setOnClickListener {
@@ -80,9 +74,6 @@ class LoginFragment : Fragment() {
 
         if (password.isEmpty()) {
             binding.passwordEditText.error = "Password required"
-            isValid = false
-        } else if (password.length < 8) {
-            binding.passwordEditText.error = "Password must be at least 8 characters"
             isValid = false
         }
 

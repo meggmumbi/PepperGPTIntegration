@@ -23,6 +23,7 @@
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/bottom_sheet_feedback.xml" value="0.26766304347826086" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/card_asd_item.xml" value="0.17395833333333333" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/dialog_feedback.xml" value="0.2667572463768116" />
+        <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/dialog_pepper_conversation.xml" value="0.54375" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/dropdown_menu_item.xml" value="0.2758152173913043" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/fragment_activities.xml" value="0.67" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/fragment_add_category.xml" value="0.2758152173913043" />
@@ -35,6 +36,7 @@
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/fragment_create_item.xml" value="0.6041666666666666" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/fragment_edit_child.xml" value="0.2758152173913043" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/fragment_login.xml" value="0.2758152173913043" />
+        <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/fragment_pepper_chat.xml" value="0.54375" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/fragment_performance_details.xml" value="0.26811594202898553" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/fragment_progress_trends.xml" value="0.26811594202898553" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/fragment_register.xml" value="0.18802083333333333" />
@@ -43,6 +45,8 @@
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/item_category.xml" value="0.2758152173913043" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/item_category_item.xml" value="0.26811594202898553" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/item_child.xml" value="0.2758152173913043" />
+        <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/item_conversation.xml" value="0.54375" />
+        <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/item_conversation_message.xml" value="0.54375" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/item_performance.xml" value="0.26811594202898553" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/item_session_history.xml" value="0.26811594202898553" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/layout_empty_state.xml" value="0.26766304347826086" />

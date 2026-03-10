@@ -3,6 +3,7 @@ package com.example.peppergptintegration
 import android.Manifest
 import android.app.Dialog
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.BitmapFactory
@@ -13,6 +14,9 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
+import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
 import android.util.Base64
 import android.util.Log
 import android.view.*
@@ -29,10 +33,7 @@ import com.example.peppergptintegration.TherapyItem
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -44,6 +45,7 @@ import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
+import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
@@ -56,6 +58,7 @@ class ActivitiesFragment : Fragment() {
         private const val CORRECT_ANIMATION_DURATION = 2160L
         private const val INCORRECT_ANIMATION = "both_hands_on_hips_b001.qianim"
         private const val INCORRECT_ANIMATION_DURATION = 1440L
+        private const val ATTENTION_UPDATE_INTERVAL = 2000L
     }
 
     private var _binding: FragmentActivitiesBinding? = null
@@ -69,7 +72,9 @@ class ActivitiesFragment : Fragment() {
             .retryOnConnectionFailure(true)
             .build()
     }
-
+    private lateinit var speechRecognizer: SpeechRecognizer
+    private lateinit var speechRecognizerIntent: Intent
+    private var isListening = false
     private var sessionId: String? = null
     private var currentItem: TherapyItem? = null
     private var nonverbalOptions: List<NonverbalOption> = emptyList()
@@ -87,6 +92,14 @@ class ActivitiesFragment : Fragment() {
     private var feedbackPopup: Dialog? = null
     private var isFeedbackInProgress = false
 
+    // Visual Attention Tracking
+    private var attentionTrackingJob: Job? = null
+    private var sessionStartTime: Long = 0L
+    private var totalAttentionTime: Long = 0L
+    private var lastAttentionCheckTime: Long = 0L
+    private var isCurrentlyAttending: Boolean = false
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -100,23 +113,70 @@ class ActivitiesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        requestAudioPermissions()
+        requestAudioPermissionsIfNeeded()
         setupAudioRecording()
 //        setupToolbar()
         setupClickListeners()
         setupResponseTypeToggle()
         startTherapySession()
         startSessionTimer()
+        setupSpeechRecognition()
     }
-    private fun requestAudioPermissions() {
-        val permissions = arrayOf(
-            Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        )
 
-        if (permissions.any { ContextCompat.checkSelfPermission(requireContext(), it) != PackageManager.PERMISSION_GRANTED }) {
+    private fun setupSpeechRecognition() {
+        // Check if speech recognition is available
+        if (!SpeechRecognizer.isRecognitionAvailable(requireContext())) {
+            showErrorState("Speech recognition is not available on this device")
+            return
+        }
+
+        // Check permission before creating speech recognizer
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // Don't create recognizer yet - wait for permission
+            binding.recordButton.setOnClickListener {
+                requestAudioPermission()
+            }
+            return
+        }
+
+        initializeSpeechRecognizer()
+    }
+
+    private fun hasAudioPermissions(): Boolean {
+        return ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun requestAudioPermissionsIfNeeded() {
+        if (!hasAudioPermissions()) {
+            val permissions = arrayOf(
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            )
             requestPermissions(permissions, AUDIO_PERMISSION_REQUEST_CODE)
+        } else {
+            // Permissions already granted, proceed with audio setup
+            setupAudioRecording()
+        }
+    }
+
+    private fun requestAudioPermission() {
+        if (!hasAudioPermissions()) {
+            val permissions = arrayOf(
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            )
+            requestPermissions(permissions, AUDIO_PERMISSION_REQUEST_CODE)
+        } else {
+            // Permissions already granted, proceed with audio setup
+            setupAudioRecording()
         }
     }
 
@@ -126,17 +186,202 @@ class ActivitiesFragment : Fragment() {
         grantResults: IntArray
     ) {
         if (requestCode == AUDIO_PERMISSION_REQUEST_CODE) {
-            if (grantResults.any { it != PackageManager.PERMISSION_GRANTED }) {
-                Toast.makeText(context, "Audio permissions are required", Toast.LENGTH_SHORT).show()
+            if (hasAudioPermissions()) {
+                // Permissions granted, setup audio recording
+                setupAudioRecording()
+            } else {
+                Toast.makeText(context, "Audio permissions are required for this feature", Toast.LENGTH_SHORT).show()
+                // You might want to disable audio-related features here
             }
         }
     }
+
+    private fun initializeSpeechRecognizer() {
+        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(requireContext())
+
+        speechRecognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5)
+            putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, requireContext().packageName)
+
+
+        }
+
+        speechRecognizer.setRecognitionListener(object : RecognitionListener {
+            override fun onReadyForSpeech(params: Bundle?) {
+                isListening = true
+                updateListeningUI(true)
+                binding.verbalResponseText.text = "Listening... Speak now"
+                binding.verbalResponseText.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.success)
+                )
+            }
+
+            override fun onBeginningOfSpeech() {
+                binding.verbalResponseText.text = "Speaking..."
+            }
+
+            override fun onRmsChanged(rmsdB: Float) {
+                // Optional: Add visual feedback for audio level
+            }
+
+            override fun onBufferReceived(buffer: ByteArray?) {
+                // Not needed for most cases
+            }
+
+            override fun onEndOfSpeech() {
+                binding.verbalResponseText.text = "Processing speech..."
+            }
+
+            override fun onError(error: Int) {
+                isListening = false
+                updateListeningUI(false)
+                binding.verbalResponseText.text = "Tap microphone to speak"
+
+                when (error) {
+                    SpeechRecognizer.ERROR_AUDIO -> {
+                        // Specifically handle audio permission errors
+                        if (ContextCompat.checkSelfPermission(
+                                requireContext(),
+                                Manifest.permission.RECORD_AUDIO
+                            ) != PackageManager.PERMISSION_GRANTED
+                        ) {
+                            showError("Microphone permission required")
+                            requestAudioPermission()
+                        } else {
+                            showError("Audio recording error")
+                        }
+                    }
+                    SpeechRecognizer.ERROR_CLIENT -> return // Usually when user cancels
+                    SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> {
+                        showError("Microphone permission required")
+                        requestAudioPermission()
+                    }
+                    SpeechRecognizer.ERROR_NETWORK -> showError("Network error")
+                    SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> showError("Network timeout")
+                    SpeechRecognizer.ERROR_NO_MATCH -> showError("No speech recognized")
+                    SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> showError("Recognition service busy")
+                    SpeechRecognizer.ERROR_SERVER -> showError("Server error")
+                    SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> showError("No speech input")
+                    else -> showError("Unknown error: $error")
+                }
+            }
+
+            override fun onResults(results: Bundle?) {
+                isListening = false
+                updateListeningUI(false)
+
+                val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                if (!matches.isNullOrEmpty()) {
+                    val recognizedText = matches[0]
+                    processSpeechResponse(recognizedText)
+                } else {
+                    binding.verbalResponseText.text = "No speech recognized. Tap to try again"
+                    binding.recordButton.text = "Try Again"
+                }
+            }
+
+            override fun onPartialResults(partialResults: Bundle?) {
+                val matches = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                if (!matches.isNullOrEmpty()) {
+                    val partialText = matches[0]
+                    binding.verbalResponseText.text = "Listening: $partialText"
+
+                    val confidences = partialResults?.getFloatArray(SpeechRecognizer.CONFIDENCE_SCORES)
+                    if (confidences != null && confidences.isNotEmpty() && confidences[0] > 0.7f) {
+                        if (partialText.length <= 5) {
+                            speechRecognizer?.cancel()
+                            processSpeechResponse(partialText)
+                        }
+                    }
+                }
+            }
+
+            override fun onEvent(eventType: Int, params: Bundle?) {
+                // Not commonly used
+            }
+        })
+
+        // Set up the button listener after recognizer is initialized
+        binding.recordButton.setOnClickListener {
+            if (isListening) {
+                stopListening()
+            } else {
+                startListening()
+            }
+        }
+    }
+
+    private fun showError(message: String) {
+        lifecycleScope.launch(Dispatchers.Main) {
+            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
+    private fun stopListening() {
+        try {
+            speechRecognizer?.stopListening()
+            isListening = false
+            updateListeningUI(false)
+        } catch (e: Exception) {
+            Log.e("SpeechRecognition", "Failed to stop listening", e)
+        }
+    }
+
+    private fun startListening() {
+        // Double-check permission
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestAudioPermission()
+            return
+        }
+
+        // Ensure speech recognizer is initialized
+        if (speechRecognizer == null) {
+            initializeSpeechRecognizer()
+        }
+
+        try {
+            responseStartTime = System.currentTimeMillis()
+            speechRecognizer?.startListening(speechRecognizerIntent)
+
+        } catch (e: Exception) {
+            Log.e("SpeechRecognition", "Failed to start listening", e)
+            showErrorState("Failed to start speech recognition: ${e.message}")
+        }
+    }
+
+
+    private fun updateListeningUI(isActive: Boolean) {
+        if (isActive) {
+            binding.recordButton.text = "Stop Listening"
+            binding.recordButton.setIconResource(R.drawable.ic_stop)
+            binding.recordButton.backgroundTintList = ColorStateList.valueOf(
+                ContextCompat.getColor(requireContext(), R.color.errorLight)
+            )
+            binding.recordButton.isPressed = true
+        } else {
+            binding.recordButton.text = "Speak Response"
+            binding.recordButton.setIconResource(R.drawable.ic_mic)
+            binding.recordButton.backgroundTintList = ColorStateList.valueOf(
+                ContextCompat.getColor(requireContext(), R.color.asd_neutral_text)
+            )
+            binding.recordButton.isPressed = false
+        }
+    }
+
     private fun setupAudioRecording() {
         binding.recordButton.setOnClickListener {
             if (isRecording) {
-                stopRecording()
+                stopListening()
             } else {
-                startRecording()
+                startListening()
             }
         }
     }
@@ -162,6 +407,14 @@ class ActivitiesFragment : Fragment() {
 
             isRecording = true
             binding.recordButton.text = "Stop Recording"
+            binding.recordButton.text = "Stop Recording"
+            binding.recordButton.setIconResource(R.drawable.ic_stop) // Stop icon
+            binding.recordButton.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.errorLight))
+            binding.verbalResponseText.text = "Recording... Speak now"
+            binding.verbalResponseText.setTextColor(ContextCompat.getColor(requireContext(), R.color.errorLight))
+
+            // Add visual feedback
+            binding.recordButton.isPressed = true
 
 
         } catch (e: Exception) {
@@ -170,85 +423,90 @@ class ActivitiesFragment : Fragment() {
         }
     }
 
-    private fun stopRecording() {
-        try {
-            audioRecorder?.apply {
-                stop()
-                release()
-            }
-            audioRecorder = null
-            isRecording = false
-            binding.recordButton.text = "Record Response"
-            (activity as? MainActivity)?.safeSay("Recording stopped")
+//    private fun stopRecording() {
+//        try {
+//            audioRecorder?.apply {
+//                stop()
+//                release()
+//            }
+//            audioRecorder = null
+//            isRecording = false
+//            binding.recordButton.text = "Record Response"
+//            binding.recordButton.setIconResource(R.drawable.ic_mic) // Mic icon
+//            binding.recordButton.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.asd_neutral_text))
+//            binding.verbalResponseText.text = "Press the button to speak"
+//            binding.verbalResponseText.setTextColor(ContextCompat.getColor(requireContext(), R.color.background_gray))
+//
+//            (activity as? MainActivity)?.safeSay("Recording stopped")
+//
+//            // Process the recorded audio
+//            audioFile?.let { file ->
+//                if (file.exists() && file.length() > 0) {
+//                    processAudioResponse(file)
+//                } else {
+//                    Toast.makeText(context, "Recording failed", Toast.LENGTH_SHORT).show()
+//                }
+//            }
+//        } catch (e: Exception) {
+//            Log.e("AudioRecording", "Failed to stop recording", e)
+//        }
+//    }
 
-            // Process the recorded audio
-            audioFile?.let { file ->
-                if (file.exists() && file.length() > 0) {
-                    processAudioResponse(file)
-                } else {
-                    Toast.makeText(context, "Recording failed", Toast.LENGTH_SHORT).show()
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("AudioRecording", "Failed to stop recording", e)
-        }
-    }
-
-    private fun processAudioResponse(audioFile: File) {
-        currentItem?.let { item ->
-            showLoadingState()
-            (activity as? MainActivity)?.safeSay("Processing your response")
-            val responseTimeSeconds = (System.currentTimeMillis() - responseStartTime) / 1000
-            lifecycleScope.launch {
-                try {
-                    val response = withContext(Dispatchers.IO) {
-                        sendAudioToApi(
-                            sessionId = sessionId!!,
-                            itemId = item.id,
-                            response_time_seconds = responseTimeSeconds,
-                            audioFile = audioFile
-                        )
-                    }
-
-                    withContext(Dispatchers.Main) {
-                        if (response != null) {
-                            val isCorrect = response.analysis.is_correct
-
-                            // Show appropriate feedback (correct/incorrect)
-                            showAudioFeedback(isCorrect, response.analysis.feedback)
-
-                            if (isCorrect) {
-                                // Correct response - proceed to next item
-                                isProcessingResponse = true
-                                Handler(Looper.getMainLooper()).postDelayed({
-                                    fetchNextItem()
-                                }, 2000) // Delay to allow user to see feedback
-                            } else if (retryAttempts < MAX_RETRY_ATTEMPTS) {
-                                // Incorrect but can retry
-                                retryAttempts++
-                                Handler(Looper.getMainLooper()).postDelayed({
-                                    (activity as? MainActivity)?.safeSay("Try again. Listen and say: ${item.name}")
-                                      hideLoadingState()
-                                }, 2000)
-                            } else {
-                                // Final incorrect attempt - proceed to next item
-                                isProcessingResponse = true
-                                Handler(Looper.getMainLooper()).postDelayed({
-                                    fetchNextItem()
-                                }, 2000)
-                            }
-                        } else {
-                            showErrorState("Failed to process audio response")
-                        }
-                    }
-                } catch (e: Exception) {
-                    withContext(Dispatchers.Main) {
-                        showErrorState("Error processing audio: ${e.message}")
-                    }
-                }
-            }
-        }
-    }
+//    private fun processAudioResponse(audioFile: File) {
+//        currentItem?.let { item ->
+//            showLoadingState()
+//
+//            val responseTimeSeconds = (System.currentTimeMillis() - responseStartTime) / 1000
+//            lifecycleScope.launch {
+//                try {
+//                    val response = withContext(Dispatchers.IO) {
+//                        sendAudioToApi(
+//                            sessionId = sessionId!!,
+//                            itemId = item.id,
+//                            response_time_seconds = responseTimeSeconds,
+//                            audioFile = audioFile
+//                        )
+//                    }
+//
+//                    withContext(Dispatchers.Main) {
+//                        if (response != null) {
+//                            val isCorrect = response.analysis.is_correct
+//
+//                            // Show appropriate feedback (correct/incorrect)
+//                            showAudioFeedback(isCorrect, response.analysis.feedback)
+//
+//                            if (isCorrect) {
+//                                // Correct response - proceed to next item
+//                                isProcessingResponse = true
+//                                Handler(Looper.getMainLooper()).postDelayed({
+//                                    fetchNextItem()
+//                                }, 2000) // Delay to allow user to see feedback
+//                            } else if (retryAttempts < MAX_RETRY_ATTEMPTS) {
+//                                // Incorrect but can retry
+//                                retryAttempts++
+//                                Handler(Looper.getMainLooper()).postDelayed({
+//                                    (activity as? MainActivity)?.safeSay("${response.analysis.feedback} Try again. Listen: ${item.description}")
+//                                      hideLoadingState()
+//                                }, 2000)
+//                            } else {
+//                                // Final incorrect attempt - proceed to next item
+//                                isProcessingResponse = true
+//                                Handler(Looper.getMainLooper()).postDelayed({
+//                                    fetchNextItem()
+//                                }, 2000)
+//                            }
+//                        } else {
+//                            showErrorState("Failed to process audio response")
+//                        }
+//                    }
+//                } catch (e: Exception) {
+//                    withContext(Dispatchers.Main) {
+//                        showErrorState("Error processing audio: ${e.message}")
+//                    }
+//                }
+//            }
+//        }
+//    }
     private suspend fun sendAudioToApi(
         sessionId: String,
         itemId: String,
@@ -519,7 +777,7 @@ class ActivitiesFragment : Fragment() {
 
     private fun startTherapySession() {
         showLoadingState()
-        (activity as? MainActivity)?.safeSay("Starting therapy session...")
+        (activity as? MainActivity)?.startGazeTracking()
 
         lifecycleScope.launch {
             try {
@@ -536,8 +794,10 @@ class ActivitiesFragment : Fragment() {
                 val sessionResponse = parseSessionResponse(responseBodyString)
                 if (sessionResponse != null) {
                     sessionId = sessionResponse.sessionId
+
                     fetchNextItem()
-                    (activity as? MainActivity)?.safeSay("Session started. Here's your first item.")
+                    (activity as? MainActivity)?.safeSay("Loading therapy session...")
+
                 } else {
                     showErrorState("Failed to parse session response")
                     (activity as? MainActivity)?.safeSay("Failed to start session. Please try again.")
@@ -550,7 +810,6 @@ class ActivitiesFragment : Fragment() {
             }
         }
     }
-
 
     private suspend fun startSessionOnApi(
         childId: String,
@@ -632,6 +891,12 @@ class ActivitiesFragment : Fragment() {
                                     Log.d("FetchNextItem", "Success after $attempt attempts")
                                 }
                                 isSessionComplete -> {
+                                    // Stop gaze tracking and get results
+                                    val gazeResult = (activity as? MainActivity)?.stopGazeTracking()
+
+                                    // Log or send gaze tracking results
+                                    logGazeTrackingResults(gazeResult)
+
                                     fetchSessionOverview()
                                     success = true
                                 }
@@ -678,6 +943,7 @@ class ActivitiesFragment : Fragment() {
             TherapyItem(
                 id = json.getString("item_id"),
                 name = json.getString("name"),
+                description = json.getString("description"),
                 imageBase64 = json.optString("image_url", null).takeIf { it.isNotBlank() }
             )
         } catch (e: Exception) {
@@ -837,6 +1103,7 @@ class ActivitiesFragment : Fragment() {
     }
 
     private fun showContentState(item: TherapyItem) {
+
         isProcessingResponse = false
         binding.nonverbalOptionsGroup.clearCheck()
         binding.itemNameTextView.text = item.name
@@ -865,7 +1132,12 @@ class ActivitiesFragment : Fragment() {
 
         // Reset to verbal mode for each new item
         binding.responseTypeToggleGroup.check(R.id.verbalButton)
-        (activity as? MainActivity)?.safeSay("This is ${item.name}. Is this correct?")
+// This ensures any previous speech has fully stopped
+        Handler(Looper.getMainLooper()).postDelayed({
+            if (!isFeedbackInProgress && !isProcessingResponse) {
+                (activity as? MainActivity)?.safeSay("${item.description}")
+            }
+        }, 1000)
     }
 
     private fun showEmptyState() {
@@ -986,7 +1258,7 @@ class ActivitiesFragment : Fragment() {
         disableAllResponseOptions()
 
         val (animationRes, speechText) = if (isCorrect) {
-            Pair(R.raw.affirmation_a005, "Yay! That's correct, let's go to the next item.")
+            Pair(R.raw.affirmation_a005, "Yay! That's correct.")
         } else {
             Pair(R.raw.both_hands_on_hips_b001, "Oops, incorrect, let's try again.")
         }
@@ -1028,55 +1300,304 @@ class ActivitiesFragment : Fragment() {
         }
     }
 
-    private fun showAudioFeedback(isCorrect: Boolean, feedback: String) {
+
+
+    private fun processSpeechResponse(recognizedText: String) {
+        currentItem?.let { item ->
+            showLoadingState()
+
+            val responseTimeSeconds = (System.currentTimeMillis() - responseStartTime) / 1000
+            lifecycleScope.launch {
+                try {
+                    val response = withContext(Dispatchers.IO) {
+                        sendTranscriptionToApi(
+                            sessionId = sessionId!!,
+                            itemId = item.id,
+                            response_time_seconds = responseTimeSeconds,
+                            transcription = recognizedText
+                        )
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        if (response != null) {
+                            val isCorrect = response.analysis.is_correct
+
+                            showAudioFeedback(isCorrect, response.analysis.feedback) {
+                                // Add a small delay to ensure Pepper's speech is fully complete
+                                Handler(Looper.getMainLooper()).postDelayed({
+                                    if (isCorrect) {
+                                        // Correct response - proceed to next item
+                                        isProcessingResponse = true
+                                        fetchNextItem()
+                                    } else if (retryAttempts < MAX_RETRY_ATTEMPTS) {
+                                        // Incorrect but can retry
+                                        retryAttempts++
+                                        (activity as? MainActivity)?.safeSay("${response.analysis.feedback} Try again. Listen: ${item.description}")
+                                        hideLoadingState()
+                                    } else {
+                                        // Final incorrect attempt - proceed to next item
+                                        isProcessingResponse = true
+                                        fetchNextItem()
+                                    }
+                                }, 300) // 300ms delay to ensure speech is fully complete
+                            }
+                        } else {
+                            showErrorState("Failed to process audio response")
+                        }
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        showErrorState("Error processing audio: ${e.message}")
+                    }
+                }
+            }
+        }
+    }
+
+    private fun showAudioFeedback(isCorrect: Boolean, feedback: String, onComplete: () -> Unit) {
         if (isFeedbackInProgress) return
         isFeedbackInProgress = true
 
-        // 1. Immediately show the popup
+        // Immediately show the popup
         feedbackPopup = showFeedbackPopup(isCorrect)
         disableAllResponseOptions()
 
         val (animationRes, speechText) = if (isCorrect) {
-            Pair(R.raw.affirmation_a005, "Yay! That's correct, let's go to the next item.")
+            Pair(R.raw.affirmation_a005, "Yay! ${feedback}.")
         } else {
-            Pair(R.raw.both_hands_on_hips_b001, "Oops, incorrect, let's try again.")
+            Pair(R.raw.both_hands_on_hips_b001, "Oops, incorrect.")
         }
 
         (activity as? MainActivity)?.let { mainActivity ->
-            // 2. Start Pepper's animation and speech together
-            val startTime = System.currentTimeMillis()
+            // Track completion status
+            var animationCompleted = false
+            var speechCompleted = false
 
+            // Define the check function first
+            fun checkAndCompleteFeedback() {
+                if (animationCompleted && speechCompleted) {
+                    // Add a small buffer for smooth transition
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        dismissFeedbackPopup()
+                        isFeedbackInProgress = false
+                        onComplete() // Call the callback to proceed with next item
+                    }, 500) // 500ms buffer for smooth transition
+                }
+            }
+
+            // Start Pepper's animation
             mainActivity.runPepperAnimation(animationRes,
                 if (isCorrect) CORRECT_ANIMATION_DURATION else INCORRECT_ANIMATION_DURATION
             ) {
                 Log.d("Feedback", "Animation completed")
+                animationCompleted = true
+                checkAndCompleteFeedback() // Now it's defined
             }
 
+            // Start Pepper's speech
             mainActivity.speakWithPepper(speechText) {
                 Log.d("Feedback", "Speech completed")
+                speechCompleted = true
+                checkAndCompleteFeedback() // Now it's defined
             }
-
-            // 3. Calculate total expected duration
-            val totalDuration = max(
-                if (isCorrect) CORRECT_ANIMATION_DURATION else INCORRECT_ANIMATION_DURATION,
-                speechText.length * 100L // Approximate speech duration
-            ) + 500 // Buffer time
-
-            // 4. Wait for the full experience to complete
-            Handler(Looper.getMainLooper()).postDelayed({
-                dismissFeedbackPopup()
-
-                isFeedbackInProgress = false
-            }, totalDuration)
 
         } ?: run {
             // Fallback mode without Pepper
             Handler(Looper.getMainLooper()).postDelayed({
                 dismissFeedbackPopup()
                 isFeedbackInProgress = false
+                onComplete() // Call the callback to proceed with next item
             }, if (isCorrect) 2500 else 2000)
         }
     }
+
+    private suspend fun sendTranscriptionToApi(
+        sessionId: String,
+        itemId: String,
+        response_time_seconds: Long,
+        transcription: String
+    ): AudioResponse? {
+        val token = getAuthToken() ?: throw Exception("Not authenticated")
+
+        return try {
+
+            val json = JSONObject().apply {
+                put("transcription", transcription)
+            }
+
+            val requestBody = json.toString().toRequestBody("application/json".toMediaType())
+
+            val request = Request.Builder()
+                .url("${BuildConfig.BASE_URL}speech/sessions/$sessionId/process-transcription?item_id=$itemId&response_time_seconds=$response_time_seconds")
+                .addHeader("Authorization", "Bearer $token")
+                .addHeader("Accept", "application/json")
+                .post(requestBody)
+                .build()
+
+            val response = client.newCall(request).execute()
+            if (response.isSuccessful) {
+                response.body?.string()?.let { json ->
+                    val gson = Gson()
+                    gson.fromJson(json, AudioResponse::class.java)
+                }
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.e("AudioUpload", "Error sending audio", e)
+            null
+        }
+    }
+
+
+    private fun recordAudioResponse(
+        itemId: String,
+        isCorrect: Boolean,
+        attempt_number: Int,
+        selectedOption: String? = null
+    ) {
+        disableAllResponseOptions()
+//        binding.progressIndicator.visibility = View.VISIBLE
+
+        val responseTimeSeconds = (System.currentTimeMillis() - responseStartTime) / 1000
+
+        lifecycleScope.launch {
+            try {
+                val success = withContext(Dispatchers.IO) {
+                    recordAudioResponseOnApi(
+                        sessionId = sessionId!!,
+                        itemId = itemId,
+                        attempt_number = attempt_number,
+                        isCorrect = isCorrect,
+                        responseTimeSeconds = responseTimeSeconds.toInt(),
+
+                        )
+                }
+
+                withContext(Dispatchers.Main) {
+                    if (success) {
+                        retryAttempts = 0
+                        isProcessingResponse = false
+                        fetchNextItem()
+                    } else {
+                        showErrorState("Failed to record response")
+                        enableAllResponseOptions()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    showErrorState("Error recording response: ${e.message}")
+                    enableAllResponseOptions()
+                }
+            }
+        }
+    }
+
+    private suspend fun recordAudioResponseOnApi(
+        sessionId: String,
+        itemId: String,
+        attempt_number: Int,
+        isCorrect: Boolean,
+        responseTimeSeconds: Int,
+        selectedOption: String? = null
+    ): Boolean {
+        val token = getAuthToken() ?: throw Exception("Not authenticated")
+
+        val json = JSONObject().apply {
+            put("item_id", itemId)
+            put("attempt_number", attempt_number)
+            put("is_correct", isCorrect)
+            put("response_type", if (selectedOption != null) "nonverbal" else "generic")
+            put("pronunciation_score", 0)
+            put("response_time_seconds", responseTimeSeconds)
+            selectedOption?.let { put("selected_option", it) }
+        }
+
+        val requestBody = json.toString().toRequestBody("application/json".toMediaType())
+
+        val request = Request.Builder()
+            .url("${BuildConfig.BASE_URL}activities/sessions/$sessionId/record-response")
+            .addHeader("Authorization", "Bearer $token")
+            .addHeader("Accept", "application/json")
+            .post(requestBody)
+            .build()
+
+        val response = client.newCall(request).execute()
+        return response.isSuccessful
+    }
+
+
+    private fun logGazeTrackingResults(gazeResult: GazeTrackingManager.GazeTrackingResult?) {
+        gazeResult?.let { result ->
+            Log.i("GazeTracking",
+                "Session Results:\n" +
+                        "Duration: ${result.sessionDuration}ms\n" +
+                        "Attention: ${"%.2f".format(result.attentionPercentage)}%\n" +
+                        "Zones - 1: ${"%.2f".format(result.zonePercentages?.get(1) ?: null)}%, " +
+                        "2: ${"%.2f".format(result.zonePercentages?.get(2) ?: null)}%, " +
+                        "3: ${"%.2f".format(result.zonePercentages?.get(3) ?: null)}%\n" +
+                        "Emotions - Pleasure: ${"%.2f".format(result.averagePleasure)}, " +
+                        "Excitement: ${"%.2f".format(result.averageExcitement)}\n" +
+                        "Engagement: ${"%.2f".format(result.engagementPercentage)}%, " +
+                        "Smile: ${"%.2f".format(result.smilePercentage)}%")
+
+            saveGazeDataToServer(result)
+        }
+    }
+    private fun saveGazeDataToServer(gazeResult: GazeTrackingManager.GazeTrackingResult) {
+        lifecycleScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    val gazeDataJson = JSONObject().apply {
+                        put("session_id", sessionId)
+                        put("child_id", args.childId)
+                        put("session_duration_ms", gazeResult.sessionDuration)
+                        put("total_attention_time_ms", gazeResult.totalAttentionTime)
+                        put("attention_percentage", gazeResult.attentionPercentage)
+                        put("time_in_zone1_ms", gazeResult.timeInZone1)
+                        put("time_in_zone2_ms", gazeResult.timeInZone2)
+                        put("time_in_zone3_ms", gazeResult.timeInZone3)
+                        put("zone1_percentage", gazeResult.zonePercentages?.get(1) ?: null)
+                        put("zone2_percentage", gazeResult.zonePercentages?.get(2) ?: null)
+                        put("zone3_percentage", gazeResult.zonePercentages?.get(3) ?: null)
+                        put("average_pleasure", gazeResult.averagePleasure)
+                        put("average_excitement", gazeResult.averageExcitement)
+                        put("engagement_percentage", gazeResult.engagementPercentage)
+                        put("smile_percentage", gazeResult.smilePercentage)
+                        put("total_gaze_data_points", gazeResult.gazeData?.size)
+                        put("session_start_time", sessionStartTime)
+                        put("session_end_time", System.currentTimeMillis())
+                    }
+
+                    val requestBody = gazeDataJson.toString().toRequestBody("application/json".toMediaTypeOrNull())
+                    val token = getAuthToken() ?: throw Exception("Not authenticated")
+
+                    client.newCall(
+                        Request.Builder()
+                            .url("${BuildConfig.BASE_URL}activities/tracking/")
+                            .addHeader("Authorization", "Bearer $token")
+                            .addHeader("Accept", "application/json")
+                            .post(requestBody)
+                            .build()
+                    ).execute()
+                }
+
+                if (response.isSuccessful) {
+                    Log.d("GazeTracking", "Successfully saved gaze data to server")
+                } else {
+                    Log.e("GazeTracking", "Failed to save gaze data: ${response.code} - ${response.body?.string()}")
+                }
+
+            } catch (e: Exception) {
+                Log.e("GazeTracking", "Failed to save gaze data: ${e.message}")
+            }
+        }
+    }
+
+
+
+
+
 
 
     private fun dismissFeedbackPopup() {
@@ -1105,6 +1626,7 @@ data class SessionStartResponse(
 data class TherapyItem(
     val id: String,
     val name: String,
+    val description: String,
     val imageBase64: String?
 )
 

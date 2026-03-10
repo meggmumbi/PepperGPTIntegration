@@ -30,10 +30,12 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField "String", "BASE_URL", '"http://192.168.100.26:8000/"'
+            buildConfigField "String", "BASE_URL", '"http://192.168.2.71:8000/"'
+            buildConfigField "String", "OPENAI_API_KEY", '"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"'
         }
         release {
-            buildConfigField "String", "BASE_URL", '"http://192.168.100.26:8000/"'
+            buildConfigField "String", "BASE_URL", '"http://192.168.2.71:8000/"'
+            buildConfigField "String", "OPENAI_API_KEY", '"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"'
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }

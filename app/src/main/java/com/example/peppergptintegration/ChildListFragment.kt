@@ -4,6 +4,8 @@ import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.widget.Button
+import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -11,17 +13,25 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.peppergptintegration.databinding.FragmentChildListBinding
 import com.example.peppergptintegration.Child
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 class ChildListFragment : Fragment() {
 
@@ -53,7 +63,9 @@ class ChildListFragment : Fragment() {
             )
         }
 
-
+        binding.conversationFab.setOnClickListener {
+            navigateToPepperChat()
+        }
 
         // Make Pepper announce the screen
         (activity as? MainActivity)?.safeSay("Here is the list of children. Please select a child to begin therapy.")
@@ -202,6 +214,12 @@ class ChildListFragment : Fragment() {
     private fun getAuthToken(): String? {
         return activity?.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
             ?.getString("auth_token", null)
+    }
+
+    private fun navigateToPepperChat() {
+        findNavController().navigate(
+            ChildListFragmentDirections.actionChildListFragmentToPepperChatFragment()
+        )
     }
 
     private fun navigateToChildDetails(childId: String) {

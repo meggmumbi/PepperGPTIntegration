@@ -23,10 +23,7 @@
             app:argType="string"
             android:defaultValue="" />
 
-        <argument
-            android:name="password"
-            app:argType="string"
-            android:defaultValue="" />
+
     </fragment>
 
     <!-- Registration Fragment -->
@@ -47,10 +44,6 @@
                 app:argType="string"
                 android:defaultValue="" />
 
-            <argument
-                android:name="password"
-                app:argType="string"
-                android:defaultValue="" />
         </action>
     </fragment>
 
@@ -90,7 +83,17 @@
             app:destination="@id/loginFragment"
             app:popUpTo="@id/loginFragment"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_childListFragment_to_pepperChatFragment"
+            app:destination="@id/pepperChatFragment" />
     </fragment>
+
+    <!-- Pepper Fragment -->
+    <fragment
+        android:id="@+id/pepperChatFragment"
+        android:name="com.example.peppergptintegration.PepperChatFragment"
+        android:label="Chat with Pepper"
+        tools:layout="@layout/fragment_pepper_chat" />
     <!-- Add Child Fragment -->
     <fragment
         android:id="@+id/addChildFragment"

@@ -154,6 +154,7 @@ class CreateItemFragment : Fragment() {
             put("difficulty_level", difficultyLevel)
             put("description", description)
             put("generate_image", generateImage)
+
         }
 
         val requestBody = json.toString().toRequestBody("application/json".toMediaType())

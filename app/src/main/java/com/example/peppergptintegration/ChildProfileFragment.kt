@@ -3,9 +3,12 @@ package com.example.peppergptintegration
 
 import android.content.Context
 import android.os.Bundle
+import android.text.Spanned
+import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.view.*
 import androidx.core.content.ContextCompat
+import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.peppergptintegration.databinding.FragmentChildProfileBinding
@@ -42,6 +45,7 @@ class ChildProfileFragment : Fragment() {
         setupViewPager()
         loadChildProfile()
         loadProgressData()
+        loadAIRecommendations()
     }
 
     private fun setupViewPager() {
@@ -56,6 +60,38 @@ class ChildProfileFragment : Fragment() {
                 else -> ""
             }
         }.attach()
+    }
+
+    private fun loadAIRecommendations() {
+        childId?.let { id ->
+            lifecycleScope.launch {
+                try {
+                    val recommendations = withContext(Dispatchers.IO) {
+                        val response = OkHttpClient().newCall(
+                            Request.Builder()
+                                .url("${BuildConfig.BASE_URL}children/children/$id/recommendations")
+                                .addHeader("Authorization", "Bearer ${getAuthToken()}")
+                                .addHeader("Accept", "application/json")
+                                .build()
+                        ).execute()
+
+                        if (response.isSuccessful) {
+                            response.body?.string()?.let { parseAIRecommendations(it) }
+                        } else {
+                            null
+                        }
+                    }
+
+                    recommendations?.let {
+                        withContext(Dispatchers.Main) {
+                            bindAIRecommendations(it)
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("ChildProfile", "Error loading AI recommendations", e)
+                }
+            }
+        }
     }
 
     private fun loadChildProfile() {
@@ -102,6 +138,21 @@ class ChildProfileFragment : Fragment() {
         )
     }
 
+    private fun parseAIRecommendations(json: String): AIRecommendation? {
+        return try {
+            val jsonObject = JSONObject(json)
+            AIRecommendation(
+                child_id = jsonObject.getString("child_id"),
+                child_name = jsonObject.getString("child_name"),
+                recommendations = jsonObject.getString("recommendations"),
+                timestamp = jsonObject.getString("timestamp")
+            )
+        } catch (e: Exception) {
+            Log.e("ChildProfile", "Error parsing AI recommendations", e)
+            null
+        }
+    }
+
     private fun bindChildProfile(profile: ChildProfile) {
         binding.childName.text = profile.name
         binding.childAge.text = "${profile.age} years old"
@@ -109,7 +160,23 @@ class ChildProfileFragment : Fragment() {
         binding.childNotes.text = profile.notes
 
         // Pepper can announce the child's name
+        (activity as? MainActivity)?.enableTabletReachability()
         (activity as? MainActivity)?.safeSay("Viewing profile for ${profile.name}")
+    }
+
+    private fun bindAIRecommendations(recommendation: AIRecommendation) {
+        // Format the recommendations with HTML for better display
+        val formattedText = recommendation.recommendations
+            .replace("**Focus Areas:**", "<b>Focus Areas:</b>")
+            .replace("**Progress Insights:**", "<br><br><b>Progress Insights:</b>")
+            .replace("**Recommendations:**", "<br><br><b>Recommendations:</b>")
+            .replace("\n", "<br>")
+            .replace("**", "<b>") // Handle remaining bold markers if any
+
+        val spannedText: Spanned = HtmlCompat.fromHtml(formattedText, HtmlCompat.FROM_HTML_MODE_LEGACY)
+
+        binding.aIRecommendationContent.text = spannedText
+        binding.aIRecommendationContent.movementMethod = LinkMovementMethod.getInstance()
     }
 
     private fun loadProgressData() {

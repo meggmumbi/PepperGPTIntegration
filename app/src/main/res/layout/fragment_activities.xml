@@ -191,7 +191,10 @@
                                 app:iconTint="#FFFFFF"
                                 app:backgroundTint="#FF9800"
                                 app:cornerRadius="90dp"
-                                android:elevation="4dp"/>
+                                android:elevation="8dp"
+                                android:stateListAnimator="@null"
+                                android:clickable="true"
+                                android:focusable="true"/>
 
                             <TextView
                                 android:id="@+id/verbalResponseText"

@@ -153,6 +153,7 @@ class CreateCategoryFragment : Fragment() {
             put("name", name)
             put("description", description)
             put("difficulty_level", difficultyLevel.lowercase())
+            put("type", "personalized")
         }
 
         val requestBody = json.toString().toRequestBody("application/json".toMediaType())

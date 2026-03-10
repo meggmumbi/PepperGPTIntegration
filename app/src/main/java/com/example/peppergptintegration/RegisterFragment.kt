@@ -52,7 +52,7 @@ class RegisterFragment : Fragment() {
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     val response = performRegistration(username, email, password)
-                    handleRegistrationResponse(response, username, password)
+                    handleRegistrationResponse(response, username)
                 } catch (e: Exception) {
                     activity?.runOnUiThread {
                         binding.progressBar.visibility = View.GONE
@@ -104,7 +104,7 @@ class RegisterFragment : Fragment() {
         }
     }
 
-    private fun handleRegistrationResponse(response: String, username: String, password: String) {
+    private fun handleRegistrationResponse(response: String, username: String) {
         activity?.runOnUiThread {
             binding.progressBar.visibility = View.GONE
             binding.registerButton.isEnabled = true
@@ -114,10 +114,11 @@ class RegisterFragment : Fragment() {
                 if (json.has("message")) {
                     // Navigate to login with auto-filled credentials using Safe Args
                     val directions = RegisterFragmentDirections
-                        .actionRegisterFragmentToLoginFragment(username, password)
+                        .actionRegisterFragmentToLoginFragment(username)
                     findNavController().navigate(directions)
 
                     // Make Pepper announce the success
+                    (activity as? MainActivity)?.enableTabletReachability()
                     (activity as? MainActivity)?.safeSay("Registration complete. Logging you in now.")
                 } else {
                     showError("Registration failed")

@@ -6,4 +6,12 @@
     <string name="no_session_history_subtitle">No sessions found for this child</string>
     <string name="no_feedback_available">No Feedback for this session</string>
     <string name="error_loading_session_history">Erro Loading Session History</string>
+
+    <string name="speech_not_available">Speech recognition not available on this device</string>
+    <string name="listening">Listening…</string>
+    <string name="speech_prompt">Speak to Pepper about ASD…</string>
+    <string name="permission_denied">Microphone permission denied</string>
+    <string name="recognition_error">Error: %1$s</string>
+    <string name="audio_error">Audio recording error</string>
+
 </resources>
