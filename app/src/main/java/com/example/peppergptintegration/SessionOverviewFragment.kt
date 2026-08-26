@@ -121,24 +121,24 @@ class SessionOverviewFragment : Fragment() {
     private fun performResultsAnnouncement(overview: SessionOverview) {
         val mainActivity = activity as? MainActivity ?: return
 
-        // Start drum roll animation
-        mainActivity.runPepperAnimation(
-            R.raw.drumroll_b001, // You'll need to add this animation resource
-            9000 // 9 seconds as specified
-        ) {
-            Log.d("Overview", "Drum roll animation completed")
-        }
-
-        // Use safeSay with the drum roll text (this will speak while animating)
-        // The animation will continue for the full 9 seconds while speech plays
-        mainActivity.safeSay(
-            "Drum roll please..."
-        )
+//        // Start drum roll animation
+//        mainActivity.runPepperAnimation(
+//            R.raw.drumroll_b001, // You'll need to add this animation resource
+//            9000 // 9 seconds as specified
+//        ) {
+//            Log.d("Overview", "Drum roll animation completed")
+//        }
+//
+//        // Use safeSay with the drum roll text (this will speak while animating)
+//        // The animation will continue for the full 9 seconds while speech plays
+//        mainActivity.safeSay(
+//            "Drum roll please..."
+//        )
 
         // Schedule the results announcement after the drum roll
         Handler(Looper.getMainLooper()).postDelayed({
             announceResults(overview)
-        }, 9000) // 9 seconds delay
+        }, 300) // 9 seconds delay
     }
 
     private fun announceResults(overview: SessionOverview) {

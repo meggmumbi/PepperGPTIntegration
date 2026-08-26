@@ -173,6 +173,7 @@ class CreateItemFragment : Fragment() {
         // Show success message on UI thread
         activity?.runOnUiThread {
             showSnackbar("Item created successfully")
+            (activity as? MainActivity)?.enableTabletReachability()
             (activity as? MainActivity)?.safeSay("Item created successfully.")
 
             // Navigate back after a short delay to ensure message is seen
@@ -185,6 +186,7 @@ class CreateItemFragment : Fragment() {
     private fun showError(message: String) {
         activity?.runOnUiThread {
             showSnackbar(message)
+            (activity as? MainActivity)?.enableTabletReachability()
             (activity as? MainActivity)?.safeSay("Error: $message")
         }
     }

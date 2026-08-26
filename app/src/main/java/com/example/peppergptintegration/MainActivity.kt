@@ -9,6 +9,8 @@ import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.annotation.RawRes
 import androidx.appcompat.app.AppCompatActivity
@@ -115,6 +117,28 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.child_list_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+
+            R.id.action_logout -> {
+
+                // Navigate back to login and clear stack
+                navController.navigate(R.id.loginFragment)
+
+                true
+            }
+
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+
+
     fun enableTabletReachability() {
         enforceTabletReachability?.async()?.run()
     }
@@ -146,7 +170,7 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
             }
 
             try {
-                val uri = URI("ws://192.168.2.71:8000/ws")
+                val uri = URI("ws://192.168.100.26:8000/ws")
                 webSocketClient = object : WebSocketClient(uri) {
                     override fun onOpen(handshakedata: ServerHandshake?) {
                         connectionAttempts = 0

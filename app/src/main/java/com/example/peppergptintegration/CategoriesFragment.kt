@@ -2,6 +2,8 @@ package com.example.peppergptintegration
 
 import android.content.Context
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -67,7 +69,11 @@ class CategoriesFragment : Fragment() {
             )
         }
         // Make Pepper announce the screen
-        (activity as? MainActivity)?.safeSay("Here are the therapy categories. Please select a category to view activities.")
+        (activity as? MainActivity)?.enableTabletReachability()
+        Handler(Looper.getMainLooper()).postDelayed({
+            (activity as? MainActivity)?.safeSay("Hello, welcome to this session. My name is Pepe, and I am your tutor. I have fun activities lined up for you. In this activity I will show you an image and prompt you to repeat after me. Don't worry I will help you")
+        }, 1000)
+
     }
 
     private fun setupRecyclerView() {
@@ -261,7 +267,7 @@ class CategoriesFragment : Fragment() {
 //        findNavController().navigate(
 //            CategoriesFragmentDirections.actionCategoriesFragmentToActivitiesFragment(category.id)
 //        )
-
+        (activity as? MainActivity)?.enableTabletReachability()
         (activity as? MainActivity)?.safeSay("You selected ${category.name} category.")
     }
 

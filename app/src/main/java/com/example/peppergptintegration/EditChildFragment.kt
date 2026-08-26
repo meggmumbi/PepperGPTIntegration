@@ -61,6 +61,7 @@ class EditChildFragment : Fragment() {
         loadChildData()
 
         // Make Pepper announce the screen
+        (activity as? MainActivity)?.enableTabletReachability()
         (activity as? MainActivity)?.safeSay("Editing child profile. You can update the details here.")
     }
 
@@ -276,19 +277,19 @@ class EditChildFragment : Fragment() {
             binding.ageInputLayout.error = null
         }
 
-        if (binding.diagnosisDateEditText.text.isNullOrEmpty()) {
-            binding.diagnosisDateInputLayout.error = "Diagnosis date is required"
-            isValid = false
-        } else {
-            binding.diagnosisDateInputLayout.error = null
-        }
-
-        if (binding.goalsEditText.text.isNullOrEmpty()) {
-            binding.goalsInputLayout.error = "Therapy goals are required"
-            isValid = false
-        } else {
-            binding.goalsInputLayout.error = null
-        }
+//        if (binding.diagnosisDateEditText.text.isNullOrEmpty()) {
+//            binding.diagnosisDateInputLayout.error = "Diagnosis date is required"
+//            isValid = false
+//        } else {
+//            binding.diagnosisDateInputLayout.error = null
+//        }
+//
+//        if (binding.goalsEditText.text.isNullOrEmpty()) {
+//            binding.goalsInputLayout.error = "Therapy goals are required"
+//            isValid = false
+//        } else {
+//            binding.goalsInputLayout.error = null
+//        }
 
         return isValid
     }

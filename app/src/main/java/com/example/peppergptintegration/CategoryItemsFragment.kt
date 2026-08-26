@@ -55,6 +55,7 @@ class CategoryItemsFragment : Fragment() {
         }
 
         // Make Pepper announce the screen
+        (activity as? MainActivity)?.enableTabletReachability()
         (activity as? MainActivity)?.safeSay("Here are the items in this category. You can view each item by tapping the eye icon.")
     }
 
@@ -212,6 +213,7 @@ class CategoryItemsFragment : Fragment() {
 //        )
 
         // Optional Pepper announcement
+        (activity as? MainActivity)?.enableTabletReachability()
         (activity as? MainActivity)?.safeSay("Showing details for ${item.name}.")
     }
 
@@ -251,11 +253,13 @@ class CategoryItemsFragment : Fragment() {
     }
     private fun showSuccess(message: String) {
         Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+        (activity as? MainActivity)?.enableTabletReachability()
         (activity as? MainActivity)?.safeSay(message)
     }
 
     private fun showError(message: String) {
         Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+        (activity as? MainActivity)?.enableTabletReachability()
         (activity as? MainActivity)?.safeSay("Error: $message")
     }
     override fun onDestroyView() {

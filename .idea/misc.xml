@@ -12,7 +12,11 @@
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/drawable/divider.xml" value="0.207" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/drawable/divider_vertical.xml" value="0.207" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/drawable/ic_add_child.xml" value="0.196" />
+        <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/drawable/ic_arrow_right.xml" value="0.2225" />
+        <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/drawable/ic_back.xml" value="0.2225" />
+        <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/drawable/ic_done.xml" value="0.2225" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/drawable/ic_feedback.xml" value="0.207" />
+        <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/drawable/ic_logout.xml" value="0.145" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/drawable/ic_person.xml" value="0.207" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/drawable/ic_person_add.xml" value="0.196" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/drawable/image_background_border.xml" value="0.122" />
@@ -55,6 +59,7 @@
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/layout/ragment_session_overview.xml" value="0.26811594202898553" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/menu/activity_menu.xml" value="0.3625" />
         <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/menu/child_list_menu.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/ADMIN/AndroidStudioProjects/PepperGPTIntegration/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.145" />
       </map>
     </option>
   </component>

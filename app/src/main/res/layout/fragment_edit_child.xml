@@ -82,7 +82,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:hint="Child's Name"
+                        android:hint="Participant code"
                         app:boxStrokeColor="#6EC6FF"
                         app:hintTextColor="#B0BEC5"
                         app:boxCornerRadiusTopStart="12dp"

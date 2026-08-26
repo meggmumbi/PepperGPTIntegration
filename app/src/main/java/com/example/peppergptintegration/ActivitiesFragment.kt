@@ -599,6 +599,7 @@ class ActivitiesFragment : Fragment() {
     private fun endSession() {
         sessionTimer?.cancel()
         findNavController().navigateUp()
+        (activity as? MainActivity)?.enableTabletReachability()
         (activity as? MainActivity)?.safeSay("Session ended")
     }
 
@@ -609,11 +610,13 @@ class ActivitiesFragment : Fragment() {
                     R.id.verbalButton -> {
                         binding.verbalResponseContainer.visibility = View.VISIBLE
                         binding.nonverbalResponseContainer.visibility = View.GONE
+                        (activity as? MainActivity)?.enableTabletReachability()
                         (activity as? MainActivity)?.safeSay("Verbal response selected")
                     }
                     R.id.nonverbalButton -> {
                         binding.verbalResponseContainer.visibility = View.GONE
                         binding.nonverbalResponseContainer.visibility = View.VISIBLE
+                        (activity as? MainActivity)?.enableTabletReachability()
                         (activity as? MainActivity)?.safeSay("Nonverbal response selected")
                         loadNonverbalOptions()
                     }
@@ -751,7 +754,7 @@ class ActivitiesFragment : Fragment() {
                         chip.setChipBackgroundColorResource(R.color.surfaceContainerHighest)
                         chip.setTextColor(ContextCompat.getColor(requireContext(), R.color.onSurface))
                         group.clearCheck()
-
+                        (activity as? MainActivity)?.enableTabletReachability()
                         (activity as? MainActivity)?.safeSay("Try again. Find ${item.name}")
                     }, 1500)
                 } else {
@@ -795,6 +798,7 @@ class ActivitiesFragment : Fragment() {
                 if (sessionResponse != null) {
                     sessionId = sessionResponse.sessionId
 
+                    (activity as? MainActivity)?.enableTabletReachability()
                     fetchNextItem()
                     (activity as? MainActivity)?.safeSay("Loading therapy session...")
 
@@ -806,6 +810,7 @@ class ActivitiesFragment : Fragment() {
             } catch (e: Exception) {
                 showErrorState("Network error: ${e.message} during start therapy session")
                 Log.e("TherapySession", "Exception during session start", e)
+                (activity as? MainActivity)?.enableTabletReachability()
                 (activity as? MainActivity)?.safeSay("Network error. Please check your connection.")
             }
         }
@@ -1135,6 +1140,7 @@ class ActivitiesFragment : Fragment() {
 // This ensures any previous speech has fully stopped
         Handler(Looper.getMainLooper()).postDelayed({
             if (!isFeedbackInProgress && !isProcessingResponse) {
+                (activity as? MainActivity)?.enableTabletReachability()
                 (activity as? MainActivity)?.safeSay("${item.description}")
             }
         }, 1000)
@@ -1332,6 +1338,7 @@ class ActivitiesFragment : Fragment() {
                                     } else if (retryAttempts < MAX_RETRY_ATTEMPTS) {
                                         // Incorrect but can retry
                                         retryAttempts++
+                                        (activity as? MainActivity)?.enableTabletReachability()
                                         (activity as? MainActivity)?.safeSay("${response.analysis.feedback} Try again. Listen: ${item.description}")
                                         hideLoadingState()
                                     } else {

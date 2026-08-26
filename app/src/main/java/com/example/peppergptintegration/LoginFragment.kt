@@ -134,6 +134,7 @@ class LoginFragment : Fragment() {
             saveAuthToken(tokenResponse.accessToken)
 
             // Make Pepper announce success
+            (activity as? MainActivity)?.enableTabletReachability()
             (activity as? MainActivity)?.safeSay("Login successful! Welcome back.")
 
             // Navigate to main screen

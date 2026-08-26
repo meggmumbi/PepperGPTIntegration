@@ -68,6 +68,7 @@ class ChildListFragment : Fragment() {
         }
 
         // Make Pepper announce the screen
+        (activity as? MainActivity)?.enableTabletReachability()
         (activity as? MainActivity)?.safeSay("Here is the list of children. Please select a child to begin therapy.")
     }
 
@@ -232,6 +233,7 @@ class ChildListFragment : Fragment() {
         findNavController().navigate(
             ChildListFragmentDirections.actionChildListFragmentToCategoriesFragment(child.id)
         )
+        (activity as? MainActivity)?.enableTabletReachability()
         (activity as? MainActivity)?.safeSay("Starting therapy session with ${child.name}")
     }
 

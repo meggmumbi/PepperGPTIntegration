@@ -60,6 +60,7 @@ class PepperChatFragment : Fragment(), MainActivity.SpeechRecognitionListener {
 
 
         // Make Pepper greet the therapist
+        (activity as? MainActivity)?.enableTabletReachability()
         (activity as? MainActivity)?.safeSay("Hello! I'm Pepper. Let's talk about Autism Spectrum Disorder. What would you like to discuss?")
         addMessage("Pepper", "Hello! I'm Pepper. Let's talk about Autism Spectrum Disorder. What would you like to discuss?")
     }
@@ -242,7 +243,7 @@ class PepperChatFragment : Fragment(), MainActivity.SpeechRecognitionListener {
 
                     conversationList.add(ConversationItem("Pepper", response))
                     conversationAdapter.notifyItemInserted(conversationList.size - 1)
-
+                    (activity as? MainActivity)?.enableTabletReachability()
                     (activity as? MainActivity)?.safeSay(response)
                 }
             } catch (e: Exception) {
@@ -254,7 +255,7 @@ class PepperChatFragment : Fragment(), MainActivity.SpeechRecognitionListener {
                     val errorMessage = "Sorry, I encountered an error. Please try again."
                     conversationList.add(ConversationItem("Pepper", errorMessage))
                     conversationAdapter.notifyItemInserted(conversationList.size - 1)
-
+                    (activity as? MainActivity)?.enableTabletReachability()
                     (activity as? MainActivity)?.safeSay(errorMessage)
                 }
             }

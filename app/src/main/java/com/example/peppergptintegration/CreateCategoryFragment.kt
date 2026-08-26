@@ -52,6 +52,7 @@ class CreateCategoryFragment : Fragment() {
         setupCreateButton()
 
         // Make Pepper announce the screen
+        (activity as? MainActivity)?.enableTabletReachability()
         (activity as? MainActivity)?.safeSay("You are creating a new therapy category. Please provide the name, description, and select difficulty level.")
     }
 
@@ -180,11 +181,13 @@ class CreateCategoryFragment : Fragment() {
 
     private fun showSuccess(message: String) {
         Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+        (activity as? MainActivity)?.enableTabletReachability()
         (activity as? MainActivity)?.safeSay("Category created successfully.")
     }
 
     private fun showError(message: String) {
         Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+        (activity as? MainActivity)?.enableTabletReachability()
         (activity as? MainActivity)?.safeSay("Error creating category. Please try again.")
     }
 

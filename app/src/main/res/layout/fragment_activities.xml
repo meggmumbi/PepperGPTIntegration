@@ -168,7 +168,8 @@
                                 app:iconTint="#4CAF50"
                                 app:strokeColor="#4CAF50"
                                 app:strokeWidth="1dp"
-                                app:cornerRadius="12dp"/>
+                                app:cornerRadius="12dp"
+                                android:visibility="gone"/>
                         </com.google.android.material.button.MaterialButtonToggleGroup>
 
                         <!-- Verbal Response Section -->
