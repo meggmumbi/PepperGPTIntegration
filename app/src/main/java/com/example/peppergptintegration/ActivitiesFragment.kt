@@ -92,6 +92,11 @@ class ActivitiesFragment : Fragment() {
     private var feedbackPopup: Dialog? = null
     private var isFeedbackInProgress = false
 
+    // Pronunciation task: raw PCM capture with local endpointing, scored by
+    // the backend's acoustic pipeline. SpeechRecognizer is not used for this
+    // task -- it returns text, and pronunciation cannot be judged from text.
+    private val pcmRecorder = PcmAudioRecorder()
+
     // Visual Attention Tracking
     private var attentionTrackingJob: Job? = null
     private var sessionStartTime: Long = 0L
@@ -329,6 +334,7 @@ class ActivitiesFragment : Fragment() {
         } catch (e: Exception) {
             Log.e("SpeechRecognition", "Failed to stop listening", e)
         }
+        if (pcmRecorder.isRecording) pcmRecorder.stop()
     }
 
     private fun startListening() {
@@ -341,19 +347,168 @@ class ActivitiesFragment : Fragment() {
             requestAudioPermission()
             return
         }
+        startPronunciationAttempt()
+    }
 
-        // Ensure speech recognizer is initialized
-        if (speechRecognizer == null) {
-            initializeSpeechRecognizer()
+    /**
+     * Record one attempt as 16 kHz PCM, endpoint it on the tablet, and send
+     * the audio to the backend for scoring.
+     *
+     * The backend returns the exact utterance to speak, chosen by the
+     * session's condition. Nothing about the condition is decided here, and no
+     * spoken text is composed here: if this method built any part of the
+     * feedback, the two conditions could differ by something other than the
+     * feedback content they exist to isolate.
+     */
+    private fun startPronunciationAttempt() {
+        if (pcmRecorder.isRecording) return
+
+        val item = currentItem ?: return
+        val session = sessionId ?: return
+        val wav = File(requireContext().cacheDir, "attempt_${System.currentTimeMillis()}.wav")
+        responseStartTime = System.currentTimeMillis()
+        isListening = true
+        updateListeningUI(true)
+
+        pcmRecorder.start(wav, object : PcmAudioRecorder.Listener {
+            override fun onSpeechStarted() {
+                binding.verbalResponseText.text = "Listening..."
+            }
+
+            override fun onUtterance(wav: File, speechDurationMs: Int) {
+                isListening = false
+                updateListeningUI(false)
+                showLoadingState()
+                // Speech onset, not upload completion: the DV is the interval
+                // from the end of the robot's prompt to the start of the
+                // participant's speech, so network time must not enter it.
+                val responseTime =
+                    (System.currentTimeMillis() - responseStartTime - speechDurationMs)
+                        .coerceAtLeast(0L) / 1000.0
+                submitAttempt(session, item.id, responseTime, wav)
+            }
+
+            override fun onNoSpeech(reason: String) {
+                isListening = false
+                updateListeningUI(false)
+                Log.d("Pronunciation", "no utterance captured: $reason")
+                binding.verbalResponseText.text = "I didn't hear that. Tap to try again."
+                hideLoadingState()
+            }
+        })
+    }
+
+    private fun submitAttempt(
+        sessionId: String,
+        itemId: String,
+        responseTimeSeconds: Double,
+        wav: File
+    ) {
+        lifecycleScope.launch {
+            val token = getAuthToken()
+            if (token == null) {
+                showErrorState("Not authenticated")
+                return@launch
+            }
+            when (val outcome = PronunciationApi.scoreAttempt(
+                BuildConfig.BASE_URL, token, sessionId, itemId,
+                responseTimeSeconds, wav
+            )) {
+                is PronunciationApi.Outcome.Success ->
+                    handlePronunciationResult(outcome.result)
+                is PronunciationApi.Outcome.Failure -> {
+                    // A failed request is not a failed attempt: let the
+                    // participant try again without it counting against them.
+                    hideLoadingState()
+                    showErrorState("Could not score that attempt: ${outcome.message}")
+                }
+            }
+            runCatching { wav.delete() }
+        }
+    }
+
+    private fun handlePronunciationResult(result: PronunciationApi.Result) {
+        speakPronunciationFeedback(result) {
+            Handler(Looper.getMainLooper()).postDelayed({
+                when {
+                    // Gated: the recogniser was not confident enough to judge.
+                    // The robot asked for a repeat, so this must not consume
+                    // one of the item's retries.
+                    result.gated -> {
+                        (activity as? MainActivity)?.enableTabletReachability()
+                        hideLoadingState()
+                    }
+                    result.is_correct -> {
+                        isProcessingResponse = true
+                        fetchNextItem()
+                    }
+                    retryAttempts < MAX_RETRY_ATTEMPTS -> {
+                        retryAttempts++
+                        (activity as? MainActivity)?.enableTabletReachability()
+                        hideLoadingState()
+                    }
+                    else -> {
+                        isProcessingResponse = true
+                        fetchNextItem()
+                    }
+                }
+            }, 300)
+        }
+    }
+
+    /**
+     * Speak the backend's utterance verbatim.
+     *
+     * Deliberately not [showAudioFeedback], which prefixes "Yay!" or "Oops,
+     * incorrect" and appends a re-model of its own. Those additions are
+     * app-side feedback content, and they would land on both conditions
+     * identically only by luck.
+     */
+    private fun speakPronunciationFeedback(
+        result: PronunciationApi.Result,
+        onComplete: () -> Unit
+    ) {
+        if (isFeedbackInProgress) return
+        isFeedbackInProgress = true
+
+        binding.verbalResponseText.text = result.feedback.display
+        feedbackPopup = showFeedbackPopup(result.is_correct)
+        disableAllResponseOptions()
+
+        val animation = if (result.is_correct) R.raw.affirmation_a005
+                        else R.raw.both_hands_on_hips_b001
+        val duration = if (result.is_correct) CORRECT_ANIMATION_DURATION
+                       else INCORRECT_ANIMATION_DURATION
+
+        val mainActivity = activity as? MainActivity
+        if (mainActivity == null) {
+            Handler(Looper.getMainLooper()).postDelayed({
+                dismissFeedbackPopup()
+                isFeedbackInProgress = false
+                onComplete()
+            }, 2000)
+            return
         }
 
-        try {
-            responseStartTime = System.currentTimeMillis()
-            speechRecognizer?.startListening(speechRecognizerIntent)
+        var animationDone = false
+        var speechDone = false
+        fun checkComplete() {
+            if (animationDone && speechDone) {
+                Handler(Looper.getMainLooper()).postDelayed({
+                    dismissFeedbackPopup()
+                    isFeedbackInProgress = false
+                    onComplete()
+                }, 500)
+            }
+        }
 
-        } catch (e: Exception) {
-            Log.e("SpeechRecognition", "Failed to start listening", e)
-            showErrorState("Failed to start speech recognition: ${e.message}")
+        mainActivity.runPepperAnimation(animation, duration) {
+            animationDone = true
+            checkComplete()
+        }
+        mainActivity.speakWithPepper(result.feedback.speech) {
+            speechDone = true
+            checkComplete()
         }
     }
 

@@ -15,6 +15,12 @@ plugins {
 
 }
 apply plugin: 'androidx.navigation.safeargs.kotlin'
+// Secrets are read from local.properties (git-ignored); empty fallback keeps the build compiling.
+def localProps = new Properties()
+def localPropsFile = rootProject.file("local.properties")
+if (localPropsFile.exists()) { localPropsFile.withInputStream { localProps.load(it) } }
+def openAiApiKey = localProps.getProperty("OPENAI_API_KEY", "")
+
 android {
     compileSdk 34
 
@@ -31,9 +37,11 @@ android {
     buildTypes {
         debug {
             buildConfigField "String", "BASE_URL", '"http://192.168.100.26:8000/"'
+            buildConfigField "String", "OPENAI_API_KEY", "\"${openAiApiKey}\""
         }
         release {
             buildConfigField "String", "BASE_URL", '"http://192.168.100.26:8000/"'
+            buildConfigField "String", "OPENAI_API_KEY", "\"${openAiApiKey}\""
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
