@@ -55,6 +55,13 @@ object PronunciationApi {
          * denominators, so it must NOT consume one of the item's retries.
          */
         val gated: Boolean,
+        /**
+         * Whether another attempt at this item follows. Authoritative -- the
+         * backend generates the feedback wording from the same value, so a
+         * client-side retry counter would eventually disagree with what the
+         * robot just said out loud.
+         */
+        val should_retry: Boolean,
         val score: Float,
         val verdict_score: Float,
         val confidence: Float,

@@ -430,27 +430,16 @@ class ActivitiesFragment : Fragment() {
     private fun handlePronunciationResult(result: PronunciationApi.Result) {
         speakPronunciationFeedback(result) {
             Handler(Looper.getMainLooper()).postDelayed({
-                when {
-                    // Gated: the recogniser was not confident enough to judge.
-                    // The robot asked for a repeat, so this must not consume
-                    // one of the item's retries.
-                    result.gated -> {
-                        (activity as? MainActivity)?.enableTabletReachability()
-                        hideLoadingState()
-                    }
-                    result.is_correct -> {
-                        isProcessingResponse = true
-                        fetchNextItem()
-                    }
-                    retryAttempts < MAX_RETRY_ATTEMPTS -> {
-                        retryAttempts++
-                        (activity as? MainActivity)?.enableTabletReachability()
-                        hideLoadingState()
-                    }
-                    else -> {
-                        isProcessingResponse = true
-                        fetchNextItem()
-                    }
+                // The backend decides whether a retry follows, because it
+                // worded the feedback from that same decision. Deciding it
+                // again here is how the robot ends up saying "listen again"
+                // while the tablet moves to the next word.
+                if (result.should_retry || result.gated) {
+                    (activity as? MainActivity)?.enableTabletReachability()
+                    hideLoadingState()
+                } else {
+                    isProcessingResponse = true
+                    fetchNextItem()
                 }
             }, 300)
         }
@@ -1292,13 +1281,34 @@ class ActivitiesFragment : Fragment() {
 
         // Reset to verbal mode for each new item
         binding.responseTypeToggleGroup.check(R.id.verbalButton)
-// This ensures any previous speech has fully stopped
-        Handler(Looper.getMainLooper()).postDelayed({
-            if (!isFeedbackInProgress && !isProcessingResponse) {
-                (activity as? MainActivity)?.enableTabletReachability()
-                (activity as? MainActivity)?.safeSay("${item.description}")
-            }
-        }, 1000)
+        announceItem(item)
+    }
+
+    /**
+     * Speak the prompt for a newly displayed item, once.
+     *
+     * The previous implementation fired on a fixed 1000 ms timer guarded by
+     * isFeedbackInProgress/isProcessingResponse. That raced the tail of the
+     * feedback utterance: when the timer won, QiSDK dropped the prompt against
+     * the still-running Say, and the participant saw a new word on the tablet
+     * that the robot never named -- the confusion reported after the pilot.
+     *
+     * Announcing on the feedback's completion callback instead makes the order
+     * explicit: feedback finishes, then the item is named.
+     */
+    private var announcedItemId: String? = null
+
+    private fun announceItem(item: TherapyItem) {
+        if (announcedItemId == item.id) return
+        announcedItemId = item.id
+        val mainActivity = activity as? MainActivity ?: return
+        mainActivity.enableTabletReachability()
+        mainActivity.speakWithPepper(item.description) {
+            // Only start the response window once the prompt has been heard,
+            // so response time is measured from the end of the prompt as the
+            // measure specifies -- not from when the tablet redrew.
+            responseStartTime = System.currentTimeMillis()
+        }
     }
 
     private fun showEmptyState() {
