@@ -97,6 +97,11 @@ class ActivitiesFragment : Fragment() {
     // task -- it returns text, and pronunciation cannot be judged from text.
     private val pcmRecorder = PcmAudioRecorder()
 
+    // Last SpeechRecognizer result for the current attempt, sent alongside the
+    // audio. The recogniser is good at word identity, and the backend uses
+    // that only to stop a correct production being flagged wrong.
+    private var lastTranscript: String? = null
+
     // Visual Attention Tracking
     private var attentionTrackingJob: Job? = null
     private var sessionStartTime: Long = 0L
@@ -281,6 +286,7 @@ class ActivitiesFragment : Fragment() {
                 val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 if (!matches.isNullOrEmpty()) {
                     val recognizedText = matches[0]
+                    lastTranscript = recognizedText
                     processSpeechResponse(recognizedText)
                 } else {
                     binding.verbalResponseText.text = "No speech recognized. Tap to try again"
@@ -366,6 +372,7 @@ class ActivitiesFragment : Fragment() {
         val item = currentItem ?: return
         val session = sessionId ?: return
         val wav = File(requireContext().cacheDir, "attempt_${System.currentTimeMillis()}.wav")
+        lastTranscript = null
         responseStartTime = System.currentTimeMillis()
         isListening = true
         updateListeningUI(true)
@@ -385,7 +392,7 @@ class ActivitiesFragment : Fragment() {
                 val responseTime =
                     (System.currentTimeMillis() - responseStartTime - speechDurationMs)
                         .coerceAtLeast(0L) / 1000.0
-                submitAttempt(session, item.id, responseTime, wav)
+                submitAttempt(session, item.id, responseTime, wav, lastTranscript)
             }
 
             override fun onNoSpeech(reason: String) {
@@ -402,7 +409,8 @@ class ActivitiesFragment : Fragment() {
         sessionId: String,
         itemId: String,
         responseTimeSeconds: Double,
-        wav: File
+        wav: File,
+        transcript: String?
     ) {
         lifecycleScope.launch {
             val token = getAuthToken()
@@ -412,7 +420,7 @@ class ActivitiesFragment : Fragment() {
             }
             when (val outcome = PronunciationApi.scoreAttempt(
                 BuildConfig.BASE_URL, token, sessionId, itemId,
-                responseTimeSeconds, wav
+                responseTimeSeconds, wav, transcript
             )) {
                 is PronunciationApi.Outcome.Success ->
                     handlePronunciationResult(outcome.result)

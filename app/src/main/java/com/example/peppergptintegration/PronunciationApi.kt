@@ -66,6 +66,9 @@ object PronunciationApi {
         val verdict_score: Float,
         val confidence: Float,
         val feedback: Feedback,
+        val reference_source: String?,
+        val reference_needs_review: Boolean?,
+        val transcript_matches: Boolean?,
         val expected_phones: List<String>?,
         val observed_phones: List<String>?,
         val timings_ms: Map<String, Double>?,
@@ -84,13 +87,24 @@ object PronunciationApi {
         sessionId: String,
         itemId: String,
         responseTimeSeconds: Double,
-        wav: File
+        wav: File,
+        /**
+         * On-device recogniser output for the same utterance, if available.
+         *
+         * Sent alongside the audio rather than instead of it. SpeechRecognizer
+         * is reliable at word identity, and the backend uses that only to stop
+         * a correct production being marked wrong -- it can never make a
+         * verdict worse. The acoustic pass still supplies the graded score and
+         * the phone-level diagnosis.
+         */
+        transcript: String? = null
     ): Outcome = withContext(Dispatchers.IO) {
         try {
             val body = MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("item_id", itemId)
                 .addFormDataPart("response_time_seconds", responseTimeSeconds.toString())
+                .also { if (!transcript.isNullOrBlank()) it.addFormDataPart("transcript", transcript) }
                 .addFormDataPart(
                     "audio", wav.name,
                     wav.asRequestBody("audio/wav".toMediaType())
