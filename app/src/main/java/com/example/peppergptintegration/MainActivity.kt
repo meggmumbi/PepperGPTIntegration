@@ -22,6 +22,11 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.aldebaran.qi.Future
 import com.aldebaran.qi.sdk.QiContext
+import android.os.Handler
+import android.os.Looper
+import java.util.Locale
+import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import com.aldebaran.qi.sdk.QiSDK
 import com.aldebaran.qi.sdk.RobotLifecycleCallbacks
 import com.aldebaran.qi.sdk.`object`.actuation.EnforceTabletReachability
@@ -42,6 +47,46 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
     private lateinit var navController: NavController
     private lateinit var webSocketManager: WebSocketManager
     private lateinit var qiContext: QiContext
+
+    /**
+     * Android speech, used when there is no robot.
+     *
+     * The same build runs on Pepper and on a plain Android phone. On a phone
+     * QiSDK never gains focus, so `qiContext` stays uninitialised and every
+     * Pepper call is skipped -- which used to mean the completion callbacks
+     * never fired, the feedback popup never dismissed, and the session stalled
+     * on the first item. Falling back to Android TTS keeps the whole study
+     * flow -- login, participant, activity, scoring, feedback -- working off
+     * the robot, against exactly the same code path that runs on it.
+     */
+    private var tts: TextToSpeech? = null
+    private var ttsReady = false
+    private val pendingUtterances = mutableMapOf<String, () -> Unit>()
+    private var utteranceCounter = 0
+
+    /**
+     * Whether this device is a Pepper at all, decided by the presence of the
+     * Qi service package rather than by whether focus has been granted yet.
+     *
+     * The distinction matters. There is a window between onCreate and
+     * onRobotFocusGained during which the robot has not yet handed us a
+     * QiContext; keying the fallback off the QiContext alone would route
+     * speech in that window to Android TTS *on the robot*. Keying it off the
+     * device means Pepper never speaks through anything but Pepper.
+     */
+    private val isRobotDevice: Boolean by lazy {
+        try {
+            packageManager.getPackageInfo("com.aldebaran.qi.serviceconnector", 0)
+            Log.d("Speech", "Qi service present: using the robot for speech")
+            true
+        } catch (e: Exception) {
+            Log.d("Speech", "no Qi service: using Android TTS")
+            false
+        }
+    }
+
+    /** True when the robot has given us focus and Pepper's own APIs are live. */
+    private val hasRobot: Boolean get() = ::qiContext.isInitialized
     private var listenFuture: Future<ListenResult>? = null
     private lateinit var speechRecognizer: SpeechRecognizer
     private lateinit var recognitionListener: RecognitionListener
@@ -73,8 +118,13 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
             }
         }
 
-        // Register Pepper QiSDK
-        QiSDK.register(this, this)
+        // Register Pepper QiSDK. On a phone this simply never gains focus.
+        // Wrapped because a non-robot device is not what the SDK expects.
+        try {
+            QiSDK.register(this, this)
+        } catch (e: Throwable) {
+            Log.w("Speech", "QiSDK.register failed; continuing without a robot", e)
+        }
 
         initializeSpeechRecognizer()
 
@@ -271,8 +321,79 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
         }
     }
 
+    /**
+     * Build the Android TTS engine on first use.
+     *
+     * Lazily, and only ever on a non-robot device: on Pepper this is never
+     * called, so the robot build allocates no TTS engine and holds no audio
+     * service binding it did not hold before.
+     */
+    private fun initializeTextToSpeech() {
+        if (tts != null) return
+        tts = TextToSpeech(this) { status ->
+            if (status != TextToSpeech.SUCCESS) {
+                Log.w("Speech", "TextToSpeech unavailable (status $status)")
+                return@TextToSpeech
+            }
+            // British English: the study teaches British pronunciation, and
+            // the reference lexicon is BEEP. A US voice would model the wrong
+            // target back at the participant.
+            val result = tts?.setLanguage(Locale.UK)
+            if (result == TextToSpeech.LANG_MISSING_DATA ||
+                result == TextToSpeech.LANG_NOT_SUPPORTED
+            ) {
+                tts?.setLanguage(Locale.ENGLISH)
+            }
+            tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                override fun onStart(utteranceId: String?) = Unit
+                override fun onDone(utteranceId: String?) = finishUtterance(utteranceId)
+                @Deprecated("required by the base class")
+                override fun onError(utteranceId: String?) = finishUtterance(utteranceId)
+                override fun onError(utteranceId: String?, errorCode: Int) =
+                    finishUtterance(utteranceId)
+            })
+            ttsReady = true
+            Log.d("Speech", "Android TextToSpeech ready (no robot)")
+        }
+    }
+
+    private fun finishUtterance(utteranceId: String?) {
+        val done = pendingUtterances.remove(utteranceId) ?: return
+        runOnUiThread { done() }
+    }
+
+    /**
+     * Speak through Android TTS and invoke [callback] when the audio finishes.
+     *
+     * Waiting for completion matters: the caller sequences the next item off
+     * this callback, and firing it early would let the tablet advance while
+     * the voice is still talking.
+     */
+    private fun speakWithAndroidTts(text: String, callback: () -> Unit) {
+        initializeTextToSpeech()
+        val engine = tts
+        if (engine == null || !ttsReady) {
+            // No speech available at all: do not strand the caller.
+            Log.w("Speech", "no TTS available; completing immediately")
+            runOnUiThread { callback() }
+            return
+        }
+        val id = "utt-${utteranceCounter++}"
+        pendingUtterances[id] = callback
+        val result = engine.speak(text, TextToSpeech.QUEUE_ADD, null, id)
+        if (result != TextToSpeech.SUCCESS) {
+            finishUtterance(id)
+        }
+    }
+
     fun safeSay(text: String, maxRetries: Int = 3) {
-        if (!::qiContext.isInitialized) return
+        if (!hasRobot) {
+            // On a robot that has not yet been given focus, behave exactly as
+            // before: say nothing. Only a phone falls back to Android TTS.
+            if (isRobotDevice) return
+            speakWithAndroidTts(text) {}
+            return
+        }
 
         activityScope.launch {
             var retryCount = 0
@@ -298,7 +419,16 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
     }
     // Add these helper methods:
     fun runPepperAnimation(@RawRes animationRes: Int, duration: Long, callback: () -> Unit) {
-        if (!::qiContext.isInitialized) return
+        if (!hasRobot) {
+            // No animation to play. Honour the stated duration so pacing
+            // matches, and ALWAYS call back: the caller sequences the next
+            // item off this, and the previous early return left it stranded.
+            if (isRobotDevice) {
+                Log.w("Speech", "animation requested before robot focus")
+            }
+            Handler(Looper.getMainLooper()).postDelayed({ callback() }, duration)
+            return
+        }
         activityScope.launch {
             try {
                 val animation = AnimationBuilder.with(qiContext)
@@ -322,7 +452,18 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
     }
 
     fun speakWithPepper(text: String, callback: () -> Unit = {}) {
-        if (!::qiContext.isInitialized) return
+        if (!hasRobot) {
+            if (isRobotDevice) {
+                // On the robot before focus: do not speak, but still call
+                // back. The old code returned without calling back, which
+                // would leave the feedback popup up and the session stuck.
+                Log.w("Speech", "speech requested before robot focus")
+                Handler(Looper.getMainLooper()).post { callback() }
+                return
+            }
+            speakWithAndroidTts(text, callback)
+            return
+        }
         activityScope.launch {
             try {
                 SayBuilder.with(qiContext)
@@ -630,6 +771,11 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
 
 
     override fun onDestroy() {
+        tts?.stop()
+        tts?.shutdown()
+        tts = null
+        ttsReady = false
+        pendingUtterances.clear()
         activityScope.coroutineContext.cancel()
         webSocketManager.disconnect()
         gazeTrackingManager?.cleanup()
