@@ -419,7 +419,7 @@ class ActivitiesFragment : Fragment() {
                 return@launch
             }
             when (val outcome = PronunciationApi.scoreAttempt(
-                BuildConfig.BASE_URL, token, sessionId, itemId,
+                AppConfig.baseUrl, token, sessionId, itemId,
                 responseTimeSeconds, wav, transcript
             )) {
                 is PronunciationApi.Outcome.Success ->
@@ -678,7 +678,7 @@ class ActivitiesFragment : Fragment() {
                 .build()
 
             val request = Request.Builder()
-                .url("${BuildConfig.BASE_URL}speech/sessions/$sessionId/process-audio?item_id=$itemId&response_time_seconds=$response_time_seconds")
+                .url("${AppConfig.baseUrl}speech/sessions/$sessionId/process-audio?item_id=$itemId&response_time_seconds=$response_time_seconds")
                 .addHeader("Authorization", "Bearer $token")
                 .addHeader("Accept", "application/json")
                 .post(requestBody)
@@ -808,7 +808,7 @@ class ActivitiesFragment : Fragment() {
 
     private suspend fun fetchNonverbalOptions(itemId: String): List<NonverbalOption> {
         val token = getAuthToken() ?: throw Exception("Not authenticated")
-        val url = "${BuildConfig.BASE_URL}activities/sessions/${sessionId}/selection-options/$itemId"
+        val url = "${AppConfig.baseUrl}activities/sessions/${sessionId}/selection-options/$itemId"
 
         try {
             val response = client.newCall(
@@ -985,7 +985,7 @@ class ActivitiesFragment : Fragment() {
 
         return client.newCall(
             Request.Builder()
-                .url("${BuildConfig.BASE_URL}activities/sessions/")
+                .url("${AppConfig.baseUrl}activities/sessions/")
                 .addHeader("Authorization", "Bearer $token")
                 .addHeader("Accept", "application/json")
                 .post(requestBody)
@@ -1083,7 +1083,7 @@ class ActivitiesFragment : Fragment() {
         return try {
             client.newCall(
                 Request.Builder()
-                    .url("${BuildConfig.BASE_URL}activities/sessions/$sessionId/next-item")
+                    .url("${AppConfig.baseUrl}activities/sessions/$sessionId/next-item")
                     .addHeader("Authorization", "Bearer $token")
                     .addHeader("Accept", "application/json")
                     .build()
@@ -1180,7 +1180,7 @@ class ActivitiesFragment : Fragment() {
         val requestBody = json.toString().toRequestBody("application/json".toMediaType())
 
         val request = Request.Builder()
-            .url("${BuildConfig.BASE_URL}activities/sessions/$sessionId/record-response")
+            .url("${AppConfig.baseUrl}activities/sessions/$sessionId/record-response")
             .addHeader("Authorization", "Bearer $token")
             .addHeader("Accept", "application/json")
             .post(requestBody)
@@ -1216,7 +1216,7 @@ class ActivitiesFragment : Fragment() {
         val requestBody = json.toString().toRequestBody("application/json".toMediaType())
 
         val request = Request.Builder()
-            .url("${BuildConfig.BASE_URL}activities/sessions/$sessionId/responses")
+            .url("${AppConfig.baseUrl}activities/sessions/$sessionId/responses")
             .addHeader("Authorization", "Bearer $token")
             .addHeader("Accept", "application/json")
             .post(requestBody)
@@ -1342,7 +1342,7 @@ class ActivitiesFragment : Fragment() {
                     val overview = withContext(Dispatchers.IO) {
                         val response = client.newCall(
                             Request.Builder()
-                                .url("${BuildConfig.BASE_URL}analytics/sessions/$id/overview")
+                                .url("${AppConfig.baseUrl}analytics/sessions/$id/overview")
                                 .addHeader("Authorization", "Bearer ${getAuthToken()}")
                                 .addHeader("Accept", "application/json")
                                 .build()
@@ -1608,7 +1608,7 @@ class ActivitiesFragment : Fragment() {
             val requestBody = json.toString().toRequestBody("application/json".toMediaType())
 
             val request = Request.Builder()
-                .url("${BuildConfig.BASE_URL}speech/sessions/$sessionId/process-transcription?item_id=$itemId&response_time_seconds=$response_time_seconds")
+                .url("${AppConfig.baseUrl}speech/sessions/$sessionId/process-transcription?item_id=$itemId&response_time_seconds=$response_time_seconds")
                 .addHeader("Authorization", "Bearer $token")
                 .addHeader("Accept", "application/json")
                 .post(requestBody)
@@ -1696,7 +1696,7 @@ class ActivitiesFragment : Fragment() {
         val requestBody = json.toString().toRequestBody("application/json".toMediaType())
 
         val request = Request.Builder()
-            .url("${BuildConfig.BASE_URL}activities/sessions/$sessionId/record-response")
+            .url("${AppConfig.baseUrl}activities/sessions/$sessionId/record-response")
             .addHeader("Authorization", "Bearer $token")
             .addHeader("Accept", "application/json")
             .post(requestBody)
@@ -1754,7 +1754,7 @@ class ActivitiesFragment : Fragment() {
 
                     client.newCall(
                         Request.Builder()
-                            .url("${BuildConfig.BASE_URL}activities/tracking/")
+                            .url("${AppConfig.baseUrl}activities/tracking/")
                             .addHeader("Authorization", "Bearer $token")
                             .addHeader("Accept", "application/json")
                             .post(requestBody)

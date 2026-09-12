@@ -48,7 +48,17 @@ class LoginFragment : Fragment() {
 
 
     private fun setupUi() {
+        // Show the address currently in use, and persist any edit before the
+        // login request goes out -- otherwise the first attempt would still
+        // hit the old server.
+        binding.serverEditText.setText(AppConfig.baseUrl)
+
         binding.loginButton.setOnClickListener {
+            val server = binding.serverEditText.text.toString().trim()
+            if (server.isNotEmpty()) {
+                AppConfig.setBaseUrl(requireContext(), server)
+                binding.serverEditText.setText(AppConfig.baseUrl)
+            }
             val username = binding.usernameEditText.text.toString().trim()
             val password = binding.passwordEditText.text.toString().trim()
 
@@ -100,7 +110,7 @@ class LoginFragment : Fragment() {
     }
 
     private fun performLogin(username: String, password: String): TokenResponse {
-        val url ="${BuildConfig.BASE_URL}auth/login?username=$username&password=$password"
+        val url ="${AppConfig.baseUrl}auth/login?username=$username&password=$password"
 
         val request = Request.Builder()
             .url(url)

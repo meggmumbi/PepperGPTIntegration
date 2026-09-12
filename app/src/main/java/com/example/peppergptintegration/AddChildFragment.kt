@@ -116,7 +116,7 @@ class AddChildFragment : Fragment() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val token = getAuthToken() ?: throw Exception("Not authenticated")
-                val url = "${BuildConfig.BASE_URL}activities/categories/"
+                val url = "${AppConfig.baseUrl}activities/categories/"
 
                 val request = Request.Builder()
                     .url(url)
@@ -246,7 +246,7 @@ class AddChildFragment : Fragment() {
     }
 
     private suspend fun performCreateChild(token: String): Response {
-        val url = "${BuildConfig.BASE_URL}children/"
+        val url = "${AppConfig.baseUrl}children/"
 
         val json = JSONObject().apply {
             put("name", binding.nameEditText.text.toString())

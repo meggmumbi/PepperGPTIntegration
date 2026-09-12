@@ -120,7 +120,7 @@ class CategoryItemsFragment : Fragment() {
         val token = getAuthToken() ?: throw Exception("Not authenticated")
 
         val request = Request.Builder()
-            .url("${BuildConfig.BASE_URL}activities/items/$itemId")
+            .url("${AppConfig.baseUrl}activities/items/$itemId")
             .addHeader("Authorization", "Bearer $token")
             .addHeader("Accept", "*/*")
             .delete()
@@ -172,7 +172,7 @@ class CategoryItemsFragment : Fragment() {
     private suspend fun getCategoryItemsFromApi(categoryId: String): List<CategoryItem> {
         val token = getAuthToken() ?: throw Exception("Not authenticated")
 
-        val url = "${BuildConfig.BASE_URL}activities/categories/$categoryId/items"
+        val url = "${AppConfig.baseUrl}activities/categories/$categoryId/items"
         val request = Request.Builder()
             .url(url)
             .addHeader("Authorization", "Bearer $token")

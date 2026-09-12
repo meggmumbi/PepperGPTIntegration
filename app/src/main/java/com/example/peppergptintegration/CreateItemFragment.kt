@@ -161,7 +161,7 @@ class CreateItemFragment : Fragment() {
 
         return client.newCall(
             Request.Builder()
-                .url("${BuildConfig.BASE_URL}activities/items/")
+                .url("${AppConfig.baseUrl}activities/items/")
                 .addHeader("Authorization", "Bearer $token")
                 .addHeader("Accept", "application/json")
                 .post(requestBody)

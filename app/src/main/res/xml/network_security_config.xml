@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The backend is a FastAPI server on a laptop on the same LAN, over plain
+    HTTP. Android 9 (API 28) and later block cleartext by default, which is why
+    this is needed on a phone and never was on Pepper: the robot's tablet is
+    API 23, where cleartext is permitted and this file is ignored entirely.
+    Adding it therefore changes nothing about the robot build.
+
+    Cleartext is permitted broadly rather than scoped to private addresses,
+    because Android matches <domain> entries by hostname suffix and has no
+    notion of IP ranges or CIDR. Listing "192.168.0.0" would match only that
+    one literal address, not the 192.168.x.x network - a scoped config would
+    break every LAN address except the one written down, and the laptop's
+    address changes.
+
+    The trade-off is real: the app will also send cleartext to a public host if
+    pointed at one. That is acceptable for a research tool on a trusted
+    network, and it is why the backend must not be exposed publicly. If the API
+    is ever served over HTTPS, delete this file and the manifest attributes.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

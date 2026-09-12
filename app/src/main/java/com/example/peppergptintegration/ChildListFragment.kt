@@ -144,7 +144,7 @@ class ChildListFragment : Fragment() {
             throw Exception("Not authenticated")
         }
 
-        val url = "${BuildConfig.BASE_URL}children/"
+        val url = "${AppConfig.baseUrl}children/"
         Log.d("API", "Attempting to fetch from: $url with token: ${token.take(5)}...")
 
         val request = Request.Builder()

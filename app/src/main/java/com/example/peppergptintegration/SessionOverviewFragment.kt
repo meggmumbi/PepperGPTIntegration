@@ -250,7 +250,7 @@ class SessionOverviewFragment : Fragment() {
 
         return client.newCall(
             Request.Builder()
-                .url("${BuildConfig.BASE_URL}feedback/sessions/$sessionId/feedback")
+                .url("${AppConfig.baseUrl}feedback/sessions/$sessionId/feedback")
                 .addHeader("Authorization", "Bearer $token")
                 .addHeader("Content-Type", "application/json")
                 .post(requestBody)

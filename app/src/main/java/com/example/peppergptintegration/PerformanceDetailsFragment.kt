@@ -56,7 +56,7 @@ class PerformanceDetailsFragment : Fragment() {
                 val performanceData = withContext(Dispatchers.IO) {
                     val response = OkHttpClient().newCall(
                         Request.Builder()
-                            .url("${BuildConfig.BASE_URL}analytics/children/$childId/performance-details")
+                            .url("${AppConfig.baseUrl}analytics/children/$childId/performance-details")
                             .addHeader("Authorization", "Bearer ${getAuthToken()}")
                             .addHeader("Accept", "application/json")
                             .build()

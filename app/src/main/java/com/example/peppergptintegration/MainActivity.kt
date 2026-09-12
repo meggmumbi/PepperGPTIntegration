@@ -105,6 +105,9 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Load any saved backend override before anything can make a request.
+        AppConfig.init(this)
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 

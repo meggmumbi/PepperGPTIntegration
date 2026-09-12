@@ -83,7 +83,7 @@ class SessionHistoryFragment : Fragment() {
                 val history = withContext(Dispatchers.IO) {
                     val response = OkHttpClient().newCall(
                         Request.Builder()
-                            .url("${BuildConfig.BASE_URL}analytics/children/$childId/session-history")
+                            .url("${AppConfig.baseUrl}analytics/children/$childId/session-history")
                             .addHeader("Authorization", "Bearer ${getAuthToken()}")
                             .addHeader("Accept", "application/json")
                             .build()

@@ -69,7 +69,7 @@ class ChildProfileFragment : Fragment() {
                     val recommendations = withContext(Dispatchers.IO) {
                         val response = OkHttpClient().newCall(
                             Request.Builder()
-                                .url("${BuildConfig.BASE_URL}children/children/$id/recommendations")
+                                .url("${AppConfig.baseUrl}children/children/$id/recommendations")
                                 .addHeader("Authorization", "Bearer ${getAuthToken()}")
                                 .addHeader("Accept", "application/json")
                                 .build()
@@ -101,7 +101,7 @@ class ChildProfileFragment : Fragment() {
                     val child = withContext(Dispatchers.IO) {
                         val response = OkHttpClient().newCall(
                             Request.Builder()
-                                .url("${BuildConfig.BASE_URL}children/$id")
+                                .url("${AppConfig.baseUrl}children/$id")
                                 .addHeader("Authorization", "Bearer ${getAuthToken()}")
                                 .addHeader("Accept", "application/json")
                                 .build()
@@ -186,7 +186,7 @@ class ChildProfileFragment : Fragment() {
                     val progress = withContext(Dispatchers.IO) {
                         val response = OkHttpClient().newCall(
                             Request.Builder()
-                                .url("${BuildConfig.BASE_URL}analytics/children/$id/progress")
+                                .url("${AppConfig.baseUrl}analytics/children/$id/progress")
                                 .addHeader("Authorization", "Bearer ${getAuthToken()}")
                                 .addHeader("Accept", "application/json")
                                 .build()
@@ -297,7 +297,7 @@ class ChildProfileFragment : Fragment() {
                     val trends = withContext(Dispatchers.IO) {
                         val response = OkHttpClient().newCall(
                             Request.Builder()
-                                .url("${BuildConfig.BASE_URL}analytics/children/$id/progress-trends")
+                                .url("${AppConfig.baseUrl}analytics/children/$id/progress-trends")
                                 .addHeader("Authorization", "Bearer ${getAuthToken()}")
                                 .addHeader("Accept", "application/json")
                                 .build()

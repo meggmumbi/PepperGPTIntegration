@@ -32,6 +32,35 @@
                 android:textSize="24sp"
                 android:textStyle="bold" />
 
+            <!-- Backend address. Editable so phone testing does not need a
+                 rebuild every time the laptop's LAN address changes. The
+                 compiled-in value remains the default. -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:boxStrokeColor="#6EC6FF"
+                app:hintTextColor="#B0BEC5"
+                app:boxStrokeWidth="1dp"
+                app:boxStrokeWidthFocused="2dp"
+                app:startIconTint="#6EC6FF">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/serverEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Server (e.g. 192.168.1.42:8000)"
+                    android:textColor="#37474F"
+                    android:textColorHint="#B0BEC5"
+                    android:inputType="textUri"
+                    android:maxLines="1" />
+            </com.google.android.material.textfield.TextInputLayout>
+
             <!-- Username Field -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"

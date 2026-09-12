@@ -115,7 +115,7 @@ class EditChildFragment : Fragment() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val token = getAuthToken() ?: throw Exception("Not authenticated")
-                val url = "${BuildConfig.BASE_URL}activities/categories/"
+                val url = "${AppConfig.baseUrl}activities/categories/"
 
                 val request = Request.Builder()
                     .url(url)
@@ -205,7 +205,7 @@ class EditChildFragment : Fragment() {
     }
 
     private suspend fun fetchChildDetails(childId: String, token: String): Child {
-        val url = "${BuildConfig.BASE_URL}children/$childId"
+        val url = "${AppConfig.baseUrl}children/$childId"
         val request = Request.Builder()
             .url(url)
             .addHeader("Authorization", "Bearer $token")
@@ -317,7 +317,7 @@ class EditChildFragment : Fragment() {
     }
 
     private suspend fun performUpdateChild(childId: String, token: String): Response {
-        val url = "${BuildConfig.BASE_URL}children/$childId"
+        val url = "${AppConfig.baseUrl}children/$childId"
 
         val json = JSONObject().apply {
             put("name", binding.nameEditText.text.toString())
@@ -385,7 +385,7 @@ class EditChildFragment : Fragment() {
     }
 
     private suspend fun performDeleteChild(childId: String, token: String): Response {
-        val url = "${BuildConfig.BASE_URL}children/$childId"
+        val url = "${AppConfig.baseUrl}children/$childId"
 
         val request = Request.Builder()
             .url(url)
