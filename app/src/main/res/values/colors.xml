@@ -91,4 +91,5 @@
     <!-- Status colors -->
     <color name="typing_indicator">#9E9E9E</color>
     <color name="error_red">#F44336</color>
+    <color name="app_background">#F4F7FA</color>
 </resources>

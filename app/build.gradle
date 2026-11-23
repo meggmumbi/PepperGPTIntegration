@@ -1,108 +1,84 @@
-buildscript {
-    dependencies {
-        def nav_version = "2.5.3"
-        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version"
-
-    }
-}
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'androidx.navigation.safeargs.kotlin'
-    id 'kotlin-kapt'
-    id 'kotlin-parcelize'
-
-
+    id 'org.jetbrains.kotlin.plugin.compose'
 }
-apply plugin: 'androidx.navigation.safeargs.kotlin'
-// Secrets are read from local.properties (git-ignored); empty fallback keeps the build compiling.
+
+// The backend address compiled into the build. It is only the default: the
+// sign-in screen lets it be changed per device, and that is the normal way to
+// point a phone at a laptop. Override here with BACKEND_URL in local.properties.
 def localProps = new Properties()
 def localPropsFile = rootProject.file("local.properties")
 if (localPropsFile.exists()) { localPropsFile.withInputStream { localProps.load(it) } }
-def openAiApiKey = localProps.getProperty("OPENAI_API_KEY", "")
+def backendUrl = localProps.getProperty("BACKEND_URL", "http://192.168.100.26:8000/")
 
 android {
-    compileSdk 34
+    namespace "com.example.peppergptintegration"
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.example.peppergptintegration"
+        // Pepper's tablet is Android 6.0 (API 23). Do not raise this.
         minSdk 23
         targetSdk 35
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "2.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField "String", "BASE_URL", "\"${backendUrl}\""
     }
 
     buildTypes {
-        debug {
-            buildConfigField "String", "BASE_URL", '"http://192.168.100.26:8000/"'
-            buildConfigField "String", "OPENAI_API_KEY", "\"${openAiApiKey}\""
-        }
         release {
-            buildConfigField "String", "BASE_URL", '"http://192.168.100.26:8000/"'
-            buildConfigField "String", "OPENAI_API_KEY", "\"${openAiApiKey}\""
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = '1.8'
-        freeCompilerArgs += ["-Xskip-metadata-version-check"]
-
+        jvmTarget = '17'
     }
     buildFeatures {
-        viewBinding true
+        compose true
+        buildConfig true
+    }
+    packaging {
+        resources {
+            excludes += ['/META-INF/{AL2.0,LGPL2.1}', 'META-INF/DEPENDENCIES']
+        }
     }
 }
 
 dependencies {
+    // Jetpack Compose. The BOM pins every Compose artifact to one release.
+    implementation platform('androidx.compose:compose-bom:2024.12.01')
+    implementation 'androidx.compose.ui:ui'
+    implementation 'androidx.compose.ui:ui-graphics'
+    implementation 'androidx.compose.foundation:foundation'
+    implementation 'androidx.compose.material3:material3'
+    implementation 'androidx.compose.material:material-icons-core'
+    implementation 'androidx.compose.ui:ui-tooling-preview'
+    debugImplementation 'androidx.compose.ui:ui-tooling'
 
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.appcompat:appcompat:1.3.0'
-    implementation 'com.google.android.material:material:1.4.0'
-    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.activity:activity-compose:1.9.3'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.7'
+    implementation 'androidx.lifecycle:lifecycle-runtime-compose:2.8.7'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7'
+    implementation 'androidx.navigation:navigation-compose:2.8.5'
+
+    // Only for the XML window theme and the legacy vector drawables.
+    implementation 'com.google.android.material:material:1.12.0'
+
+    // Pepper. On a phone the SDK is present and simply never gains focus.
+    implementation 'com.aldebaran:qisdk:1.7.5'
+
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'com.google.code.gson:gson:2.11.0'
+
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
-	implementation 'com.aldebaran:qisdk:1.7.5'
-	implementation 'com.aldebaran:qisdk-design:1.7.5'
-    implementation 'me.zhanghai.android.materialratingbar:library:1.4.0'
-    // WebSocket
-    implementation "org.java-websocket:Java-WebSocket:1.5.3"
-
-
-
-    // Coroutines
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0"
-
-    // Networking
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("com.squareup.okhttp3:okhttp:4.11.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
-
-    // Navigation Component
-
-    // Jetpack Compose integration
-    implementation("androidx.navigation:navigation-compose:2.5.3")
-
-    // Views/Fragments integration
-    implementation("androidx.navigation:navigation-fragment:2.5.3")
-    implementation("androidx.navigation:navigation-ui:2.5.3")
-
-    // Feature module support for Fragments
-    implementation("androidx.navigation:navigation-dynamic-features-fragment:2.5.3")
-
-    implementation "com.airbnb.android:lottie:5.2.0"
-    implementation 'de.hdodenhof:circleimageview:3.1.0'
-
 }
-
-
